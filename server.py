@@ -1,17 +1,34 @@
-import xmlrpc.client, sys
+import xmlrpc.client
+import xmlrpc.server
+from xmlrpc.server import SimpleXMLRPCRequestHandler
+from xmlrpc.server import SimpleXMLRPCServer
+import sys
 
+# server
 
-server
+# RPC methods:
+# 1. Save password
+# 	-update map
+# 2. Retrieve password
 
-RPC methods:
-1. Save password
-	-update map
-2. Retrieve password
+m = {}
 
+class RequestHandler(SimpleXMLRPCRequestHandler):
+    rpc_paths = ('/RPC2',)
 
-hostname = sys.argv[1] # ip address of this server?
-print(hostname)
+with SimpleXMLRPCServer(('localhost', 8001), requestHandler=RequestHandler, allow_none=True) as server:
+	
+	server.register_introspection_functions()
 
-server = xmlrpc.client.Server(hostname)
+	def register(key, val):
+		m[key] = val
+		return 1
 
-answer = server.FrontEndServer.search('romance')
+	def search(key):
+		if key in m:
+			return m[key]
+		return -1
+
+	server.register_function(register)
+	server.register_function(search)
+	server.serve_forever()
