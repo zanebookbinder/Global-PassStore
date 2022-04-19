@@ -17,6 +17,13 @@ print(s1.search('zbookbin google.com'))
 print(s1.search('zbookbin amazon.com'))
 
 
-
 # # Print list of available methods
 # print(s1.system.listMethods())
+# storemap of user + site keys and password fragments
+
+
+# {'zbookbin nike.com': {1: 'http://localhost:8000', 2: 'http://localhost:8001'}, 
+# 'dlittle amazon.com': {1: 'http://localhost:8000', 2: 'http://localhost:8001'}, 
+# 'sbarker gymshark.com': {1: 'http://localhost:8001', 2: 'http://localhost:8000'}, 
+# 'zbookbin google.com': {1: 'http://localhost:8000', 2: 'http://localhost:8001'}, 
+# 'ahameed bowdoin.edu': {1: 'http://localhost:8001', 2: 'http://localhost:8000'}}
