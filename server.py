@@ -113,7 +113,7 @@ with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as ser
 		return str(userPasswordMap)
 
 
-	def getPassWordData():
+	def getPasswordData():
 		return str(passwordData)
 
 
