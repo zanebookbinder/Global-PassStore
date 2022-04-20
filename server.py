@@ -27,22 +27,27 @@ TODO:
 
 
 """
+
 import xmlrpc.client
 import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 from xmlrpc.server import SimpleXMLRPCServer
 import sys
+import math
+import random
 
 passwordData = {}
 userPasswordMap = {}
+hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
 
-if sys.argv[1] == '8000':
-	otherHost = 'http://localhost:8001'
-else:
-	otherHost = 'http://localhost:8000'
+# myName = sys.argv[1] # pass in own IP address as an argument
+myName = 'http://localhost:8012'
+otherHosts = hosts.remove(myName)
 
-s = xmlrpc.client.ServerProxy(otherHost)
-myname = 'http://localhost:' + str(sys.argv[1])
+servers = {} # map of hostnames to server connections
+
+for o in otherHosts:
+	servers[o] = xmlrpc.client.ServerProxy(o)
 
 with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as server:
 	
@@ -59,17 +64,35 @@ with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as ser
 		site = key.split(' ')[1]
 
 		# turn this into its own method later
-		chunk1 = val[0:len(val)//2] # password pieces
-		chunk2 = val[len(val)//2:]
+		chunks = splitPassword(val, 4)
 
 		# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
-		put(key + '1', chunk1) # store chunk1 on this machine
-		s.put(key + '2', chunk2) # store chunk2 on the other machine
+		put(key + '1', chunks[0]) # store chunk1 on this machine
+		propogate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
-		propogate(key, myname, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
-		propogate(key, otherHost, 2)  # tell other host that it stores a piece of the zbookin amazon.com entry
+		count = 2
+		for ipAddr, connection in random.shuffle(otherHosts):
+			connection.put(key+str(count), chunks[count-1])
+			propogate(key, ipAddr, count)
+			count+=1
 
 		return 1
+
+	def splitPassword(password, n):
+		output = []
+
+		size = math.floor(len(password)/n)
+
+		start = 0
+		end = size
+		for i in range(n):
+			output.append(password[start:end+1])
+			start += size
+			end += size
+			if end > len(password) - 1:
+				end = len(password) - 1
+
+		return output
 
 	# put a (user + site), (password) pair into memory
 	def put(key, val):
@@ -129,7 +152,9 @@ with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as ser
 	# user = id + site, host = machine hostname, pieceNum = password piece number
 	def propogate(user, host, pieceNum):
 		addHost(user, host, pieceNum)
-		s.addHost(user, host, pieceNum)
+
+		for ipAddr, connection in otherHosts:
+			connection.addHost(user, host, pieceNum)
 
 
 	server.register_function(register)
@@ -141,3 +166,130 @@ with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as ser
 	server.register_function(propogate)
 	server.register_function(lookup)
 	server.serve_forever()
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import xmlrpc.client
+# import xmlrpc.server
+# from xmlrpc.server import SimpleXMLRPCRequestHandler
+# from xmlrpc.server import SimpleXMLRPCServer
+# import sys
+
+# passwordData = {}
+# userPasswordMap = {}
+
+# if sys.argv[1] == '8000':
+# 	otherHost = 'http://localhost:8001'
+# else:
+# 	otherHost = 'http://localhost:8000'
+
+# s = xmlrpc.client.ServerProxy(otherHost)
+# myname = 'http://localhost:' + str(sys.argv[1])
+
+# with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as server:
+	
+# 	server.register_introspection_functions()
+
+# 	# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
+# 	# across this machine and the other machine
+# 	def register(username, key, val):
+# 		user = key.split(' ')[0]
+
+# 		if username != user:
+# 			return 'no permissions'
+
+# 		site = key.split(' ')[1]
+
+# 		# turn this into its own method later
+# 		chunk1 = val[0:len(val)//2] # password pieces
+# 		chunk2 = val[len(val)//2:]
+
+# 		# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
+# 		put(key + '1', chunk1) # store chunk1 on this machine
+# 		s.put(key + '2', chunk2) # store chunk2 on the other machine
+
+# 		propogate(key, myname, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+# 		propogate(key, otherHost, 2)  # tell other host that it stores a piece of the zbookin amazon.com entry
+
+# 		return 1
+
+# 	# put a (user + site), (password) pair into memory
+# 	def put(key, val):
+# 		passwordData[key] = val
+# 		return 1
+
+# 	# return a password if stored (given a user + site)
+# 	def lookup(key):
+# 		if key in passwordData:
+# 			return passwordData[key]
+
+# 		return -1
+
+# 	# collect the pieces of a password given user + site
+# 	def search(key):
+
+# 		if key not in userPasswordMap:
+# 			return 'No record of key'
+
+# 		machines = userPasswordMap[key]
+# 		pieces = ['' for i in range(2)]
+
+# 		for pieceNum in machines:
+# 			if machines[pieceNum] == myname:
+# 				pieces[pieceNum-1] = lookup(key + str(pieceNum))
+# 			else:
+# 				pieces[pieceNum-1] = s.lookup(key + str(pieceNum))
+
+# 		return ''.join(pieces)
+
+# 		finalPassword = ''
+# 		for i in range(1,3):
+# 			if i not in results:
+# 				return -1
+# 			finalPassword += results[i]
+
+# 		return finalPassword
+
+
+# 	def userPasswordMap():
+# 		return str(userPasswordMap)
+
+
+# 	def getPasswordData():
+# 		return str(passwordData)
+
+
+# 	# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
+# 	def addHost(user, host, pieceNum):
+# 		if user in userPasswordMap:
+# 			if pieceNum not in userPasswordMap[user]:
+# 				userPasswordMap[user][pieceNum] = host # machine that password chunk is stored on
+# 		else:
+# 			userPasswordMap[user] = {pieceNum: host}
+
+
+# 	# user = id + site, host = machine hostname, pieceNum = password piece number
+# 	def propogate(user, host, pieceNum):
+# 		addHost(user, host, pieceNum)
+# 		s.addHost(user, host, pieceNum)
+
+
+# 	server.register_function(register)
+# 	server.register_function(search)
+# 	server.register_function(put)
+# 	server.register_function(userPasswordMap)
+# 	server.register_function(getPasswordData)
+# 	server.register_function(addHost)
+# 	server.register_function(propogate)
+# 	server.register_function(lookup)
+# 	server.serve_forever()
