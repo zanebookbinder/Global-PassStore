@@ -165,6 +165,7 @@ with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as ser
 	server.register_function(addHost)
 	server.register_function(propogate)
 	server.register_function(lookup)
+	server.register_function(splitPassword)
 	server.serve_forever()
 
 
