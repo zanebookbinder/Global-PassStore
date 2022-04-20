@@ -1,7 +1,7 @@
 import xmlrpc.client
 
-s1 = xmlrpc.client.ServerProxy('http://localhost:8000')
-s2 = xmlrpc.client.ServerProxy('http://localhost:8001')
+s1 = xmlrpc.client.ServerProxy('http://localhost:8012')
+s2 = xmlrpc.client.ServerProxy('http://52.90.4.149:8012')
 
 s1.register('zbookbin', 'zbookbin nike.com', 'hello1234')
 s1.register('dlittle', 'dlittle amazon.com', 'uhoh789')

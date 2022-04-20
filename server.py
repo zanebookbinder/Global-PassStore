@@ -46,10 +46,11 @@ otherHosts = hosts.remove(myName)
 
 servers = {} # map of hostnames to server connections
 
+#issue: it won't be able to connect to the other processes until they've been started
 for o in otherHosts:
 	servers[o] = xmlrpc.client.ServerProxy(o)
 
-with SimpleXMLRPCServer(('localhost', int(sys.argv[1])), allow_none=True) as server:
+with SimpleXMLRPCServer(('localhost', 8012, allow_none=True) as server:
 	
 	server.register_introspection_functions()
 
