@@ -1,3 +1,6 @@
+import os
+
+
 """
 Program Description: Distributed password manager server that stores and manages various usernames,
 websites, and 
@@ -40,10 +43,13 @@ passwordData = {}
 userPasswordMap = {}
 hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
 # myName = sys.argv[1] # pass in own IP address as an argument
-myName = 'http://localhost:8012'
-# hosts = [myName]
-otherHosts = hosts.remove(myName)
-# otherHosts = hosts
+myIP = os.popen('curl -s ifconfig.me').readline()
+
+print("my IP addr: ", myIP)
+# exit(0)
+
+# myName = 'http://localhost:8012'
+otherHosts = hosts.remove(myIP)
 
 servers = {} # map of hostnames to server connections
 

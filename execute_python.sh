@@ -7,5 +7,5 @@ KEYPAIR_PATH=$2
 FILE_TO_EXEC=$3
 
 for HOSTNAME in ${HOSTS} ; do
-    ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 ${FILE_TO_EXEC} 8012"
+    ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 ${FILE_TO_EXEC} 8012 &"
 done
