@@ -71,7 +71,7 @@ try:
 
 	print("Connected to other hosts")
 
-	with SimpleXMLRPCServer(('localhost', 8012, allow_none=True)) as server:
+	with SimpleXMLRPCServer(('localhost', 8012), allow_none=True) as server:
 		
 		server.register_introspection_functions()
 
