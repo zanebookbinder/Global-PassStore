@@ -39,18 +39,24 @@ import random
 passwordData = {}
 userPasswordMap = {}
 hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
-
 # myName = sys.argv[1] # pass in own IP address as an argument
 myName = 'http://localhost:8012'
+# hosts = [myName]
 otherHosts = hosts.remove(myName)
+# otherHosts = hosts
 
 servers = {} # map of hostnames to server connections
 
 #issue: it won't be able to connect to the other processes until they've been started
+print("Executing the server code now!")
+
+
 for o in otherHosts:
 	servers[o] = xmlrpc.client.ServerProxy(o)
 
-with SimpleXMLRPCServer(('localhost', 8012, allow_none=True) as server:
+print("Connected to other hosts")
+
+with SimpleXMLRPCServer('localhost', 8012, allow_none=True) as server:
 	
 	server.register_introspection_functions()
 
