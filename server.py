@@ -1,4 +1,3 @@
-import os
 
 
 """
@@ -31,6 +30,9 @@ TODO:
 
 """
 
+import os
+import traceback
+import sys
 import xmlrpc.client
 import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
@@ -52,7 +54,8 @@ try:
 	# exit(0)
 
 	# myName = 'http://localhost:8012'
-	otherHosts = hosts.remove(myIP)
+	otherHosts = hosts.copy()
+	otherHosts.remove(myIP)
 
 	servers = {} # map of hostnames to server connections
 
@@ -187,14 +190,8 @@ try:
 		server.serve_forever()
 
 
-except Exception as e:
-	print(e)
-
-
-
-
-
-
+except Exception:
+    print(traceback.format_exc())
 
 
 
