@@ -85,6 +85,7 @@ try:
 		# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
 		# across this machine and the other machine
 		def register(username, key, val):
+			print('in server register function')
 			user = key.split(' ')[0]
 
 			if username != user:
@@ -97,14 +98,20 @@ try:
 
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
 			put(key + '1', chunks[0]) # store chunk1 on this machine
+			print("before propogate to other hosts")
 			propogate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
-
+			print("after propogate to other hosts")
+			
 			count = 2
+			# guess: splitting up the password and storing it on difference 
+			print("trying to split up rest of password amongst other hosts")
 			for ipAddr, connection in random.shuffle(otherHosts):
+				print("current connection: ", ipAddr)
 				connection.put(key+str(count), chunks[count-1])
 				propogate(key, ipAddr, count)
 				count+=1
 
+			print("password has been distributed. register job complete!")
 			return 1
 
 		def splitPassword(password, n):
