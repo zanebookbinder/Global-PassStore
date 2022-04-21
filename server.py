@@ -43,11 +43,14 @@ import random
 import time
 
 
-
 # put everything in a big try/except so we can print error messages
 try:
 	sys.stdout = open('serverOut.log', 'w')
 	sys.stdout.reconfigure(line_buffering=True)
+
+	t = time.localtime()
+	current_time = time.strftime("%H:%M:%S", t)
+	print("Running at:", current_time)
 	
 	passwordData = {}
 	userPasswordMap = {}
