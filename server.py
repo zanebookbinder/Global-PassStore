@@ -38,153 +38,157 @@ from xmlrpc.server import SimpleXMLRPCServer
 import sys
 import math
 import random
+import time
 
-passwordData = {}
-userPasswordMap = {}
-hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
-# myName = sys.argv[1] # pass in own IP address as an argument
-myIP = os.popen('curl -s ifconfig.me').readline()
+# put everything in a big try/except so we can print error messages
+try:
+	passwordData = {}
+	userPasswordMap = {}
+	hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
+	# myName = sys.argv[1] # pass in own IP address as an argument
+	myIP = os.popen('curl -s ifconfig.me').readline()
 
-print("my IP addr: ", myIP)
-# exit(0)
+	print("my IP addr: ", myIP)
+	# exit(0)
 
-# myName = 'http://localhost:8012'
-otherHosts = hosts.remove(myIP)
+	# myName = 'http://localhost:8012'
+	otherHosts = hosts.remove(myIP)
 
-servers = {} # map of hostnames to server connections
+	servers = {} # map of hostnames to server connections
 
-#issue: it won't be able to connect to the other processes until they've been started
-print("Executing the server code now!")
+	#issue: it won't be able to connect to the other processes until they've been started
+	print("Executing the server code now!")
 
-sleep(1)
+	time.sleep(1)
 
-for o in otherHosts:
-	servers[o] = xmlrpc.client.ServerProxy(o)
 
-print("Connected to other hosts")
+	for o in otherHosts:
+		servers[o] = xmlrpc.client.ServerProxy(o)
 
-with SimpleXMLRPCServer('localhost', 8012, allow_none=True) as server:
-	
-	server.register_introspection_functions()
+	print("Connected to other hosts")
 
-	# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
-	# across this machine and the other machine
-	def register(username, key, val):
-		user = key.split(' ')[0]
+	with SimpleXMLRPCServer('localhost', 8012, allow_none=True) as server:
+		
+		server.register_introspection_functions()
 
-		if username != user:
-			return 'no permissions'
+		# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
+		# across this machine and the other machine
+		def register(username, key, val):
+			user = key.split(' ')[0]
 
-		site = key.split(' ')[1]
+			if username != user:
+				return 'no permissions'
 
-		# turn this into its own method later
-		chunks = splitPassword(val, 4)
+			site = key.split(' ')[1]
 
-		# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
-		put(key + '1', chunks[0]) # store chunk1 on this machine
-		propogate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			# turn this into its own method later
+			chunks = splitPassword(val, 4)
 
-		count = 2
-		for ipAddr, connection in random.shuffle(otherHosts):
-			connection.put(key+str(count), chunks[count-1])
-			propogate(key, ipAddr, count)
-			count+=1
+			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
+			put(key + '1', chunks[0]) # store chunk1 on this machine
+			propogate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
-		return 1
+			count = 2
+			for ipAddr, connection in random.shuffle(otherHosts):
+				connection.put(key+str(count), chunks[count-1])
+				propogate(key, ipAddr, count)
+				count+=1
 
-	def splitPassword(password, n):
-		output = []
+			return 1
 
-		size = math.floor(len(password)/n)
+		def splitPassword(password, n):
+			output = []
 
-		start = 0
-		end = size
-		for i in range(n):
-			output.append(password[start:end+1])
-			start += size
-			end += size
-			if end > len(password) - 1:
-				end = len(password) - 1
+			size = math.floor(len(password)/n)
 
-		return output
+			start = 0
+			end = size
+			for i in range(n):
+				output.append(password[start:end+1])
+				start += size
+				end += size
+				if end > len(password) - 1:
+					end = len(password) - 1
 
-	# put a (user + site), (password) pair into memory
-	def put(key, val):
-		passwordData[key] = val
-		return 1
+			return output
 
-	# return a password if stored (given a user + site)
-	def lookup(key):
-		if key in passwordData:
-			return passwordData[key]
+		# put a (user + site), (password) pair into memory
+		def put(key, val):
+			passwordData[key] = val
+			return 1
 
-		return -1
+		# return a password if stored (given a user + site)
+		def lookup(key):
+			if key in passwordData:
+				return passwordData[key]
 
-	# collect the pieces of a password given user + site
-	def search(key):
+			return -1
 
-		if key not in userPasswordMap:
-			return 'No record of key'
+		# collect the pieces of a password given user + site
+		def search(key):
 
-		machines = userPasswordMap[key]
-		pieces = ['' for i in range(2)]
+			if key not in userPasswordMap:
+				return 'No record of key'
 
-		for pieceNum in machines:
-			if machines[pieceNum] == myname:
-				pieces[pieceNum-1] = lookup(key + str(pieceNum))
+			machines = userPasswordMap[key]
+			pieces = ['' for i in range(2)]
+
+			for pieceNum in machines:
+				if machines[pieceNum] == myname:
+					pieces[pieceNum-1] = lookup(key + str(pieceNum))
+				else:
+					pieces[pieceNum-1] = s.lookup(key + str(pieceNum))
+
+			return ''.join(pieces)
+
+			finalPassword = ''
+			for i in range(1,3):
+				if i not in results:
+					return -1
+				finalPassword += results[i]
+
+			return finalPassword
+
+
+		def userPasswordMap():
+			return str(userPasswordMap)
+
+
+		def getPasswordData():
+			return str(passwordData)
+
+
+		# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
+		def addHost(user, host, pieceNum):
+			if user in userPasswordMap:
+				if pieceNum not in userPasswordMap[user]:
+					userPasswordMap[user][pieceNum] = host # machine that password chunk is stored on
 			else:
-				pieces[pieceNum-1] = s.lookup(key + str(pieceNum))
-
-		return ''.join(pieces)
-
-		finalPassword = ''
-		for i in range(1,3):
-			if i not in results:
-				return -1
-			finalPassword += results[i]
-
-		return finalPassword
+				userPasswordMap[user] = {pieceNum: host}
 
 
-	def userPasswordMap():
-		return str(userPasswordMap)
+		# user = id + site, host = machine hostname, pieceNum = password piece number
+		def propogate(user, host, pieceNum):
+			addHost(user, host, pieceNum)
+
+			for ipAddr, connection in otherHosts:
+				connection.addHost(user, host, pieceNum)
 
 
-	def getPasswordData():
-		return str(passwordData)
+		server.register_function(register)
+		server.register_function(search)
+		server.register_function(put)
+		server.register_function(userPasswordMap)
+		server.register_function(getPasswordData)
+		server.register_function(addHost)
+		server.register_function(propogate)
+		server.register_function(lookup)
+		server.register_function(splitPassword)
+		server.serve_forever()
 
 
-	# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
-	def addHost(user, host, pieceNum):
-		if user in userPasswordMap:
-			if pieceNum not in userPasswordMap[user]:
-				userPasswordMap[user][pieceNum] = host # machine that password chunk is stored on
-		else:
-			userPasswordMap[user] = {pieceNum: host}
-
-
-	# user = id + site, host = machine hostname, pieceNum = password piece number
-	def propogate(user, host, pieceNum):
-		addHost(user, host, pieceNum)
-
-		for ipAddr, connection in otherHosts:
-			connection.addHost(user, host, pieceNum)
-
-
-	server.register_function(register)
-	server.register_function(search)
-	server.register_function(put)
-	server.register_function(userPasswordMap)
-	server.register_function(getPasswordData)
-	server.register_function(addHost)
-	server.register_function(propogate)
-	server.register_function(lookup)
-	server.register_function(splitPassword)
-	server.serve_forever()
-
-
-
-
+except Exception as e:
+	print(e)
 
 
 
