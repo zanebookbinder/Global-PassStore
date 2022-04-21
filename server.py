@@ -49,7 +49,7 @@ try:
 	hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
 	# myName = sys.argv[1] # pass in own IP address as an argument
 	myIP = os.popen('curl -s ifconfig.me').readline()
-	myPort = sys.argv[1]
+	myPort = int(sys.argv[1])
 	print("my IP addr: ", myIP)
 	print("my port num: ", myPort)
 	# exit(0)
