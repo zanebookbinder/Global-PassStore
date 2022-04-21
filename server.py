@@ -49,10 +49,11 @@ try:
 	hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
 	# myName = sys.argv[1] # pass in own IP address as an argument
 	myIP = os.popen('curl -s ifconfig.me').readline()
-
+	myPort = sys.argv[1]
 	print("my IP addr: ", myIP)
+	print("my port num: ", myPort)
 	# exit(0)
-
+	
 	# myName = 'http://localhost:8012'
 	otherHosts = hosts.copy()
 	otherHosts.remove(myIP)
@@ -65,13 +66,13 @@ try:
 	time.sleep(1)
 
 
-	for o in otherHosts:
-		full_hostname = 'http://' + o + ':8012'
-		servers[o] = xmlrpc.client.ServerProxy(full_hostname)
+	for serverIP in otherHosts:
+		full_hostname = 'http://' + serverIP + ':' + str(myPort)
+		servers[serverIP] = xmlrpc.client.ServerProxy(full_hostname)
 
 	print("Connected to other hosts")
 
-	with SimpleXMLRPCServer(('localhost', 8012), allow_none=True) as server:
+	with SimpleXMLRPCServer(('localhost', myPort), allow_none=True) as server:
 		
 		server.register_introspection_functions()
 
