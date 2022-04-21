@@ -56,6 +56,7 @@ servers = {} # map of hostnames to server connections
 #issue: it won't be able to connect to the other processes until they've been started
 print("Executing the server code now!")
 
+sleep(1)
 
 for o in otherHosts:
 	servers[o] = xmlrpc.client.ServerProxy(o)
