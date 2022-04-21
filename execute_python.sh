@@ -7,7 +7,7 @@ KEYPAIR_PATH=$2
 FILE_TO_EXEC=$3
 
 for HOSTNAME in ${HOSTS} ; do
-    # ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 ${FILE_TO_EXEC} 8012 &"
-    ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && nohup python3 ${FILE_TO_EXEC} 8012 > serverOutput.out 2>&1 &"
+    ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 ${FILE_TO_EXEC} 8012 &" &
+    # ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && nohup python3 ${FILE_TO_EXEC} 8012 > serverOutput.out 2>&1 &" &
     # nohup mycommand > mycommand.out 2>&1 &
 done
