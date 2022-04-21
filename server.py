@@ -66,6 +66,7 @@ try:
 
 
 	for o in otherHosts:
+		full_hostname = 'http://' + o + ':8012'
 		servers[o] = xmlrpc.client.ServerProxy(o)
 
 	print("Connected to other hosts")
