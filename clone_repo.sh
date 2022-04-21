@@ -6,5 +6,5 @@ USERNAME=$1
 KEYPAIR_PATH=$2
 
 for HOSTNAME in ${HOSTS} ; do
-    ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "echo 'Host github.com' > .ssh/config && echo '    IdentityFile ~/.ssh/${USERNAME}-keypair' >> .ssh/config && echo '    StrictHostKeyChecking no' >> .ssh/config && chmod 600 .ssh/config && git clone git@github.com:bowdoin-dsys/project-4---final-project-zane-danny-ahmed.git"
+    ssh -i ${KEYPAIR_PATH}/${USERNAME}-keypair ${USERNAME}@${HOSTNAME} "rm -rf project-4---final-project-zane-danny-ahmed && echo 'Host github.com' > .ssh/config && echo '    IdentityFile ~/.ssh/${USERNAME}-keypair' >> .ssh/config && echo '    StrictHostKeyChecking no' >> .ssh/config && chmod 600 .ssh/config && git clone git@github.com:bowdoin-dsys/project-4---final-project-zane-danny-ahmed.git"
 done
