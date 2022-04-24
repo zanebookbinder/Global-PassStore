@@ -54,7 +54,8 @@ try:
 	
 	passwordData = {}
 	userPasswordMap = {}
-	hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
+	hosts ['172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
+	# hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
 	# myName = sys.argv[1] # pass in own IP address as an argument
 	myIP = os.popen('curl -s ifconfig.me').readline()
 	myPort = int(sys.argv[1])
