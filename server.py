@@ -205,7 +205,9 @@ try:
 		server.register_function(propogate)
 		server.register_function(lookup)
 		server.register_function(splitPassword)
-		server.serve_forever()
+		
+		print('about to serve forever')
+		server.serve_forever()		
 
 		sys.stdout.close()
 
