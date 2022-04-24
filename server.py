@@ -78,7 +78,7 @@ try:
 
 
 	for serverIP in otherHosts:
-		full_hostname = 'http://' + serverIP + ':' + str(myPort)
+		full_hostname = f'http://{serverIP}:{str(myPort)}/'
 		servers[serverIP] = xmlrpc.client.ServerProxy(full_hostname)
 
 	print("Connected to other hosts")
