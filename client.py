@@ -9,13 +9,12 @@ s4 = xmlrpc.client.ServerProxy('http://54.205.63.8:8012')
 
 print("setting up client connection to rpc servers ")
 
-s1.register('zbookbin', 'zbookbin nike.com', 'hello1234')
-print('in between registering values')
-s1.register('dlittle', 'dlittle amazon.com', 'uhoh789')
+# s1.register('zbookbin', 'zbookbin nike.com', 'hello1234')
+# s1.register('dlittle', 'dlittle amazon.com', 'uhoh789')
 
-s2.register('sbarker', 'sbarker gymshark.com', 'compscifun')
-s1.register('zbookbin', 'zbookbin google.com', 'secondpass5')
-s2.register('ahameed', 'ahameed bowdoin.edu', 'oops5678')
+# s2.register('sbarker', 'sbarker gymshark.com', 'compscifun')
+# s1.register('zbookbin', 'zbookbin google.com', 'secondpass5')
+# s2.register('ahameed', 'ahameed bowdoin.edu', 'oops5678')
 
 print(s1.getStoreMap())
 print(s2.getStoreMap())

@@ -207,7 +207,7 @@ try:
 		server.register_function(splitPassword)
 		
 		print('about to serve forever')
-		server.serve_forever()		
+		server.serve_forever()
 
 		sys.stdout.close()
 
