@@ -82,6 +82,7 @@ try:
 		servers[serverIP] = xmlrpc.client.ServerProxy(full_hostname)
 
 	print("Connected to other hosts")
+	print(servers)
 
 	with SimpleXMLRPCServer(('localhost', myPort), allow_none=True) as server:
 		
@@ -110,6 +111,8 @@ try:
 			count = 2
 			# guess: splitting up the password and storing it on difference 
 			print("trying to split up rest of password amongst other hosts")
+
+			# NOTE: this shouldn't be iterating through otherHosts, as that's just a list of IP's
 			for ipAddr, connection in random.shuffle(otherHosts):
 				print("current connection: ", ipAddr)
 				connection.put(key+str(count), chunks[count-1])
@@ -194,6 +197,7 @@ try:
 		def propogate(user, host, pieceNum):
 			addHost(user, host, pieceNum)
 
+			# NOTE: this shouldn't be iterating through otherHosts, as that's just a list of IP's
 			for ipAddr, connection in otherHosts:
 				connection.addHost(user, host, pieceNum)
 
