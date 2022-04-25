@@ -1,5 +1,0 @@
-Traceback (most recent call last):
-  File "server.py", line 49, in <module>
-    sys.stdout.reconfigure(line_buffering=True)
-AttributeError: '_io.TextIOWrapper' object has no attribute 'reconfigure'
-
