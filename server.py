@@ -115,6 +115,7 @@ try:
 			# amongst those servers, and propagating the update to each server as well
 			shuffledServerAddrs = list(otherServers.keys())
 			random.shuffle(shuffledServerAddrs)
+			print(shuffledServerAddrs)
 			for IPaddr in shuffledServerAddrs:
 				# shuffling the IP addresses so that no machine stores the same order chunk
 				connection = otherServers[IPaddr]
@@ -124,9 +125,10 @@ try:
 				count+=1
 
 			print("redistributing password for replication")
-			shuffledServerAddrs = list(privateIPs)
+			shuffledServerAddrs += myPrivateIP
 			random.shuffle(shuffledServerAddrs)
 			count = 1
+			print(shuffledServerAddrs)
 			for IPaddr in shuffledServerAddrs:
 				# shuffling the IP addresses so that no machine stores the same order chunk
 				connection = otherServers[IPaddr]
