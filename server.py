@@ -139,7 +139,7 @@ try:
 			output = []
 
 			# could probably make this more efficient with if instead of while
-			while password % n != 0:
+			while (len(password) % n) != 0:
 				password += ' '
 
 			size = int(len(password)/n)
