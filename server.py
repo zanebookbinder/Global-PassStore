@@ -95,6 +95,9 @@ try:
 		# across this machine and the other machine
 		def register(username, key, val):
 			print('in server register function')
+			print("Current username:", username)
+			print("Current key:", key)
+
 			user = key.split(' ')[0]
 
 			if username != user:
@@ -107,9 +110,9 @@ try:
 
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
 			put(key + '1', chunks[0]) # store chunk1 on this machine
-			print("before propogate to other hosts")
-			propogate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
-			print("after propogate to other hosts")
+			print("before propagate to other hosts")
+			propagate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			print("after propagate to other hosts")
 			
 			count = 2
 			# guess: splitting up the password and storing it on difference 
@@ -122,7 +125,7 @@ try:
 				connection = otherServers[IPaddr]
 				print("current connection: ", IPaddr)
 				connection.put(key+str(count), chunks[count-1])
-				propogate(key, IPaddr, count)
+				propagate(key, IPaddr, count)
 				count+=1
 
 			print("password has been distributed. register job complete!")
@@ -226,12 +229,14 @@ try:
 
 
 		# user = id + site, host = machine hostname, pieceNum = password piece number
-		def propogate(user, host, pieceNum):
+		def propagate(user, host, pieceNum):
 			"""
 			
 			"""
+			print("updating local user-password map")
 			addHost(user, host, pieceNum)
 
+			print("sending update to other server nodes")
 			for connection in otherServers.values():
 				connection.addHost(user, host, pieceNum)
 
@@ -242,7 +247,7 @@ try:
 		server.register_function(userPasswordMap)
 		server.register_function(getPasswordData)
 		server.register_function(addHost)
-		server.register_function(propogate)
+		server.register_function(propagate)
 		server.register_function(lookup)
 		server.register_function(splitPassword)
 		
@@ -296,8 +301,8 @@ except Exception:
 # 		put(key + '1', chunk1) # store chunk1 on this machine
 # 		s.put(key + '2', chunk2) # store chunk2 on the other machine
 
-# 		propogate(key, myname, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
-# 		propogate(key, otherHost, 2)  # tell other host that it stores a piece of the zbookin amazon.com entry
+# 		propagate(key, myname, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+# 		propagate(key, otherHost, 2)  # tell other host that it stores a piece of the zbookin amazon.com entry
 
 # 		return 1
 
@@ -357,7 +362,7 @@ except Exception:
 
 
 # 	# user = id + site, host = machine hostname, pieceNum = password piece number
-# 	def propogate(user, host, pieceNum):
+# 	def propagate(user, host, pieceNum):
 # 		addHost(user, host, pieceNum)
 # 		s.addHost(user, host, pieceNum)
 
@@ -368,6 +373,6 @@ except Exception:
 # 	server.register_function(userPasswordMap)
 # 	server.register_function(getPasswordData)
 # 	server.register_function(addHost)
-# 	server.register_function(propogate)
+# 	server.register_function(propagate)
 # 	server.register_function(lookup)
 # 	server.serve_forever()
