@@ -125,7 +125,7 @@ try:
 				count+=1
 
 			print("redistributing password for replication")
-			shuffledServerAddrs += myPrivateIP
+			shuffledServerAddrs = privateIPs
 			random.shuffle(shuffledServerAddrs)
 			count = 1
 			print(shuffledServerAddrs)
