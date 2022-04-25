@@ -120,7 +120,9 @@ try:
 
 			# shuffling through the other server connections and splitting up the current password 
 			# amongst those servers, and propagating the update to each server as well
-			for IPaddr in random.shuffle(otherServers.keys()):
+			shuffledServerAddrs = list(otherServers.keys())
+			random.shuffle(shuffledServerAddrs)
+			for IPaddr in shuffledServerAddrs:
 				# shuffling the IP addresses so that no machine stores the same order chunk
 				connection = otherServers[IPaddr]
 				print("current connection: ", IPaddr)
