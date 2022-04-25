@@ -124,8 +124,9 @@ try:
 				propagate(key, IPaddr, count)
 				count+=1
 
+
+
 			print("redistributing password for replication")
-			shuffledServerAddrs = privateIPs
 			random.shuffle(shuffledServerAddrs)
 			count = 1
 			print(shuffledServerAddrs)
@@ -136,6 +137,9 @@ try:
 				connection.put(key+str(count), chunks[count-1])
 				propagate(key, IPaddr, count)
 				count+=1
+
+			put(key + '4', chunks[3]) # store last chunk on this machine
+			propagate(key, myPrivateIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
 			return 1
