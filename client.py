@@ -2,10 +2,10 @@ import xmlrpc.client
 
 print("before client connection setup")
 
-s1 = xmlrpc.client.ServerProxy('http://172.31.55.0:8013/')
-s2 = xmlrpc.client.ServerProxy('http://172.31.53.196:8013/')
-s3 = xmlrpc.client.ServerProxy('http://172.31.52.8:8013/')
-s4 = xmlrpc.client.ServerProxy('http://172.31.53.249:8013/')
+s1 = xmlrpc.client.ServerProxy('http://172.31.55.0:8012/')
+s2 = xmlrpc.client.ServerProxy('http://172.31.53.196:8012/')
+s3 = xmlrpc.client.ServerProxy('http://172.31.52.8:8012/')
+s4 = xmlrpc.client.ServerProxy('http://172.31.53.249:8012/')
 
 print("setting up client connection to rpc servers ")
 
