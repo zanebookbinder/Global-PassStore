@@ -88,7 +88,7 @@ try:
 
 	print("Connected to other hosts")
 
-	with SimpleXMLRPCServer((myPrivateIP, myPort), allow_none=True) as server:
+	with SimpleXMLRPCServer((myPublicIP, myPort), allow_none=True) as server:
 		
 		server.register_introspection_functions()
 
