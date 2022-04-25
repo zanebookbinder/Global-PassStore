@@ -44,7 +44,7 @@ import time
 
 # put everything in a big try/except so we can print error messages
 try:
-	sys.stdout = open('serverOut.log', 'w')
+	sys.stdout = open('outputServer.log', 'w')
 	sys.stdout.reconfigure(line_buffering=True)
 
 	t = time.localtime()
@@ -272,7 +272,7 @@ try:
 		server.register_function(lookup)
 		server.register_function(splitPassword)
 		
-		print('about to serve forever - help im trapped in a process')
+		print('about to serve forever')
 		server.serve_forever()
 
 		sys.stdout.close()
