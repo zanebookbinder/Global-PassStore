@@ -50,7 +50,7 @@ try:
 	current_time = time.strftime("%H:%M:%S", t)
 	print("Running at:", current_time)
 	
-	passwordData = {}
+	localPasswordData = {}
 	userPasswordMap = {}
 	# NOTE: a potentially useful data structure will be mapping a hostAddr to all of the users/sites/pieceNums it stores. 
 	# this may be useful when we start replicating data. 
@@ -150,13 +150,13 @@ try:
 
 		# put a (user + site), (password) pair into memory
 		def put(key, val):
-			passwordData[key] = val
+			localPasswordData[key] = val
 			return 1
 
 		# return a password if stored (given a user + site)
 		def lookup(key):
-			if key in passwordData:
-				return passwordData[key]
+			if key in localPasswordData:
+				return localPasswordData[key]
 
 			return -1
 
@@ -186,12 +186,12 @@ try:
 			return finalPassword
 
 
-		def userPasswordMap():
+		def getUserPasswordMap():
 			return str(userPasswordMap)
 
 
-		def getPasswordData():
-			return str(passwordData)
+		def getLocalPasswordData():
+			return str(localPasswordData)
 
 
 		# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
@@ -215,8 +215,9 @@ try:
 				None
 			"""
 			# if the user has passwords stored in the map already
+			
 			if userSite in userPasswordMap:
-				# if this password chunk doesn't exist in the map
+				# if this password chunk number doesn't exist in the map
 				if pieceNum not in userPasswordMap[userSite]:
 					# create a new site + password entry for the existing user
 					userPasswordMap[userSite][pieceNum] = hostAddr # machine that password chunk is stored on
@@ -244,8 +245,8 @@ try:
 		server.register_function(register)
 		server.register_function(search)
 		server.register_function(put)
-		server.register_function(userPasswordMap)
-		server.register_function(getPasswordData)
+		server.register_function(getUserPasswordMap)
+		server.register_function(getLocalPasswordData)
 		server.register_function(addHost)
 		server.register_function(propagate)
 		server.register_function(lookup)
@@ -268,7 +269,7 @@ except Exception:
 # from xmlrpc.server import SimpleXMLRPCServer
 # import sys
 
-# passwordData = {}
+# localPasswordData = {}
 # userPasswordMap = {}
 
 # if sys.argv[1] == '8000':
@@ -308,13 +309,13 @@ except Exception:
 
 # 	# put a (user + site), (password) pair into memory
 # 	def put(key, val):
-# 		passwordData[key] = val
+# 		localPasswordData[key] = val
 # 		return 1
 
 # 	# return a password if stored (given a user + site)
 # 	def lookup(key):
-# 		if key in passwordData:
-# 			return passwordData[key]
+# 		if key in localPasswordData:
+# 			return localPasswordData[key]
 
 # 		return -1
 
@@ -348,8 +349,8 @@ except Exception:
 # 		return str(userPasswordMap)
 
 
-# 	def getPasswordData():
-# 		return str(passwordData)
+# 	def getlocalPasswordData():
+# 		return str(localPasswordData)
 
 
 # 	# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
@@ -371,7 +372,7 @@ except Exception:
 # 	server.register_function(search)
 # 	server.register_function(put)
 # 	server.register_function(userPasswordMap)
-# 	server.register_function(getPasswordData)
+# 	server.register_function(getlocalPasswordData)
 # 	server.register_function(addHost)
 # 	server.register_function(propagate)
 # 	server.register_function(lookup)
