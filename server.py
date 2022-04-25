@@ -191,7 +191,7 @@ try:
 				foundPiece = False
 				hostAddr = 0
 				
-				while not foundPiece and hostAddrs < len(hostAddrs):
+				while not foundPiece and hostAddr < len(hostAddrs):
 				# password exists on local machine password map
 				
 					if hostAddrs[hostAddr] == myPrivateIP:
