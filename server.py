@@ -138,16 +138,17 @@ try:
 		def splitPassword(password, n):
 			output = []
 
-			size = math.floor(len(password)/n)
+			# could probably make this more efficient with if instead of while
+			while password % n != 0:
+				password += ' '
+
+			size = int(len(password)/n)
 
 			start = 0
 			end = size
-			for i in range(n):
-				output.append(password[start:end+1])
-				start += size
-				end += size
-				if end > len(password) - 1:
-					end = len(password) - 1
+
+			for start in range(0, len(password), size):
+				output.append(password[start:start+size])
 
 			return output
 
