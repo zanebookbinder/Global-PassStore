@@ -262,7 +262,7 @@ try:
 			# new user, create a new entry in the map
 			else:
 				# associate the password piece number with the server host node that it is sto
-				userPasswordMap[userSite] = {pieceNum: hostAddr}
+				userPasswordMap[userSite] = {pieceNum: [hostAddr]}
 
 
 		# user = id + site, host = machine hostname, pieceNum = password piece number
