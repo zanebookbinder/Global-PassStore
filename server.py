@@ -111,7 +111,7 @@ try:
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
 			put(key + '1', chunks[0]) # store chunk1 on this machine
 			print("before propagate to other hosts")
-			propagate(key, myName, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			propagate(key, myPrivateIP, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 			print("after propagate to other hosts")
 			
 			count = 2
@@ -164,18 +164,30 @@ try:
 
 		# collect the pieces of a password given user + site
 		def search(key):
-
+			print("starting search...")
 			if key not in userPasswordMap:
 				return 'No record of key'
 
-			machines = userPasswordMap[key]
+
+			pieceNumToHost = userPasswordMap[key]
 			pieces = ['' for i in range(2)]
 
-			for pieceNum in machines:
-				if machines[pieceNum] == myName:
+			# iterating through every password piece number and server host that is in charge of that
+			# password piece
+			for pieceNum, hostAddr in pieceNumToHost.items():
+
+				# password exists on local machine password map
+				if hostAddr == myName:
 					pieces[pieceNum-1] = lookup(key + str(pieceNum))
+				# password exists on other server machines
 				else:
-					pieces[pieceNum-1] = s.lookup(key + str(pieceNum))
+					# find piece on other machine with RPC
+					connection = otherServers[hostAddr]
+					lookupResult = connection.lookup(key + str(pieceNum))
+					if lookupResult != -1:
+						pieces[pieceNum-1] = lookupResult
+					else:
+						print(f'expected pieceNum {pieceNum} on {hostAddr} but no password piece was found!!!')
 
 			return ''.join(pieces)
 
