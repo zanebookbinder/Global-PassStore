@@ -168,23 +168,28 @@ try:
 			if key not in userPasswordMap:
 				return 'No record of key'
 
-
+			print(f"getting all of the password pieces for the account: {key}")
 			pieceNumToHost = userPasswordMap[key]
-			pieces = ['' for i in range(2)]
+			pieces = ['' for i in range(len(pieceNumToHost.keys()))]
 
 			# iterating through every password piece number and server host that is in charge of that
 			# password piece
+			print("collecting password pieces from all the relevant server hosts")
 			for pieceNum, hostAddr in pieceNumToHost.items():
 
 				# password exists on local machine password map
-				if hostAddr == myName:
+				
+				if hostAddr == myPrivateIP:
+					print("password piece found locally")
 					pieces[pieceNum-1] = lookup(key + str(pieceNum))
 				# password exists on other server machines
 				else:
 					# find piece on other machine with RPC
+					print("looking up password piece on other server host")
 					connection = otherServers[hostAddr]
 					lookupResult = connection.lookup(key + str(pieceNum))
 					if lookupResult != -1:
+						print("found password piece on other server host")
 						pieces[pieceNum-1] = lookupResult
 					else:
 						print(f'expected pieceNum {pieceNum} on {hostAddr} but no password piece was found!!!')
