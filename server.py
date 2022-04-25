@@ -138,7 +138,7 @@ try:
 		def splitPassword(password, n):
 			output = []
 
-			size = math.floor(len(password)/n)
+			size = math.ceil(len(password)/n)
 
 			start = 0
 			end = size
