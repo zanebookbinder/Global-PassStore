@@ -14,16 +14,9 @@ Functions to update:
 		
 
 TODO:
-	0. figure out double letter parsing error! first client search returns "secconndppas" instead of "secondpass5
-	1. updating above functions to be distributed 
-	2. ssh script: copy server.py file to all machines, start program
-				ex. copy server.py:
-					scp server.py [local] [remote]
-			Goal:
-				- Single shell script [one-time use]: ssh into machines, git clone repo
-				- Recurring shell script [repeated use]: ssh into machines, git pull, execute specific python file
-	3. create a function to split a password string into multiple chunks
+	1. updating above functions to be distributed  # I THINK THIS MIGHT BE DONE??
 	4. adding replication of password
+	5. change split password to avoid adding spaces
 
 
 
@@ -106,7 +99,6 @@ try:
 
 			site = key.split(' ')[1]
 
-			# turn this into its own method later
 			chunks = splitPassword(val, 4)
 
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
@@ -131,7 +123,19 @@ try:
 				propagate(key, IPaddr, count)
 				count+=1
 
-			print("password has been distributed. register job complete!")
+			print("redistributing password for replication")
+			shuffledServerAddrs = list(privateIPs)
+			random.shuffle(shuffledServerAddrs)
+			count = 1
+			for IPaddr in shuffledServerAddrs:
+				# shuffling the IP addresses so that no machine stores the same order chunk
+				connection = otherServers[IPaddr]
+				print("current connection: ", IPaddr)
+				connection.put(key+str(count), chunks[count-1])
+				propagate(key, IPaddr, count)
+				count+=1
+
+			print("password has been distributed twice. register job complete!")
 			return 1
 
 
@@ -177,24 +181,31 @@ try:
 			# iterating through every password piece number and server host that is in charge of that
 			# password piece
 			print("collecting password pieces from all the relevant server hosts")
-			for pieceNum, hostAddr in pieceNumToHost.items():
-
+			for pieceNum, hostAddrs in pieceNumToHost.items():
+				foundPiece = False
+				hostAddr = 0
+				
+				while not foundPiece and hostAddrs < len(hostAddrs):
 				# password exists on local machine password map
 				
-				if hostAddr == myPrivateIP:
-					print("password piece found locally")
-					pieces[pieceNum-1] = lookup(key + str(pieceNum))
-				# password exists on other server machines
-				else:
-					# find piece on other machine with RPC
-					print("looking up password piece on other server host")
-					connection = otherServers[hostAddr]
-					lookupResult = connection.lookup(key + str(pieceNum))
-					if lookupResult != -1:
-						print("found password piece on other server host")
-						pieces[pieceNum-1] = lookupResult
+					if hostAddrs[hostAddr] == myPrivateIP:
+						print("password piece found locally")
+						pieces[pieceNum-1] = lookup(key + str(pieceNum))
+						foundPiece = True
+					# password exists on other server machines
 					else:
-						print(f'expected pieceNum {pieceNum} on {hostAddr} but no password piece was found!!!')
+						# find piece on other machine with RPC
+						print("looking up password piece on other server host")
+						connection = otherServers[hostAddrs[hostAddr]]
+						lookupResult = connection.lookup(key + str(pieceNum))
+						if lookupResult != -1:
+							print("found password piece on other server host")
+							pieces[pieceNum-1] = lookupResult
+							foundPiece = True
+						else:
+							print(f'expected pieceNum {pieceNum} on {hostAddrs[hostAddr]} but no password piece was found!!!')
+
+					hostAddr += 1
 
 			return ''.join(pieces).strip()
 
@@ -241,8 +252,10 @@ try:
 				# if this password chunk number doesn't exist in the map
 				if pieceNum not in userPasswordMap[userSite]:
 					# create a new site + password entry for the existing user
-					userPasswordMap[userSite][pieceNum] = hostAddr # machine that password chunk is stored on
+					userPasswordMap[userSite][pieceNum] = [hostAddr] # machine that password chunk is stored on
 				# otherwise, this password pairing exists in the map already, no updates needed
+				else:
+					userPasswordMap[userSite][pieceNum].append(hostAddr)
 			
 			# new user, create a new entry in the map
 			else:
