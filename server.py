@@ -196,7 +196,7 @@ try:
 					else:
 						print(f'expected pieceNum {pieceNum} on {hostAddr} but no password piece was found!!!')
 
-			return '|' + ''.join(pieces.strip()) + '|'
+			return '|' + ''.join(pieces).strip() + '|'
 
 			finalPassword = ''
 			for i in range(1,3):
