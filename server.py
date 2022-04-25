@@ -127,7 +127,7 @@ try:
 
 			print("redistributing password for replication")
 			first = shuffledServerAddrs[0]
-			shuffledServerAddrs = shuffledServerAddrs[1:] + first
+			shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
 			count = 1
 			print(shuffledServerAddrs)
 			for IPaddr in shuffledServerAddrs:
