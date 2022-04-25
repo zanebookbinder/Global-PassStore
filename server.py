@@ -125,9 +125,9 @@ try:
 				count+=1
 
 
-
 			print("redistributing password for replication")
-			random.shuffle(shuffledServerAddrs)
+			first = shuffledServerAddrs[0]
+			shuffledServerAddrs = shuffledServerAddrs[1:] + first
 			count = 1
 			print(shuffledServerAddrs)
 			for IPaddr in shuffledServerAddrs:
