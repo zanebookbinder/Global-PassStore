@@ -15,11 +15,9 @@ Functions to update:
 
 TODO:
 	1. updating above functions to be distributed  # I THINK THIS MIGHT BE DONE??
-	4. adding replication of password
-	5. change split password to avoid adding spaces
-
-
-
+	2. Figure out how to compact lines 115-137 (repeated for loop)
+	3. test replication with failed server
+	4. change split password to avoid adding spaces
 """
 
 import os
@@ -76,7 +74,6 @@ try:
 		allServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 		if IPaddr != myPrivateIP:
 			otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
-
 	
 
 	print("Connected to other hosts")
@@ -123,7 +120,6 @@ try:
 				connection.put(key+str(count), chunks[count-1])
 				propagate(key, IPaddr, count)
 				count+=1
-
 
 			print("redistributing password for replication")
 			first = shuffledServerAddrs[0]
