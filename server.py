@@ -18,6 +18,7 @@ TODO:
 	2. Figure out how to compact lines 115-137 (repeated for loop)
 	3. test replication with failed server
 	4. change split password to avoid adding spaces
+	5. add lots of comments and update variable names?
 """
 
 import os
