@@ -10,7 +10,7 @@ import time
 
 
 
-with SimpleXMLRPCServer(('localhost', 8000), requestHandler=RequestHandler) as server:
+with SimpleXMLRPCServer(('localhost', 8000)) as server:
     server.register_introspection_functions()
 
     def add(x, y):

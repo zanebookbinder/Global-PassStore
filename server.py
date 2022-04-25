@@ -1,5 +1,3 @@
-
-
 """
 Program Description: Distributed password manager server that stores and manages various usernames,
 websites, and 
@@ -54,37 +52,42 @@ try:
 	
 	passwordData = {}
 	userPasswordMap = {}
-	hosts = ['172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
+	# NOTE: a potentially useful data structure will be mapping a hostAddr to all of the users/sites/pieceNums it stores. 
+	# this may be useful when we start replicating data. 
+
 	hostmap = {'52.90.4.149':'172.31.55.0', '54.236.244.145':'172.31.53.196', '54.211.164.149':'172.31.52.8', '54.205.63.8':'172.31.53.249'}
-	# hosts = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
-	# myName = sys.argv[1] # pass in own IP address as an argument
-	myIP = hostmap[os.popen('curl -s ifconfig.me').readline()]
+	privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249' ]
+	# publicIPs = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
+	myPublicIP = os.popen('curl -s ifconfig.me').readline()
+	myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
 	
-	print("my IP addr: ", myIP)
+	print("my (private) IP addr: ", myPrivateIP)
 	print("my port num: ", myPort)
-	# exit(0)
 	
-	# myName = 'http://localhost:8012'
-	otherHosts = hosts.copy()
-	otherHosts.remove(myIP)
+	otherHosts = privateIPs.copy()
+	otherHosts.remove(myPrivateIP)
+	myName = f'http://{myPrivateIP}:{myPort}'
 
-	servers = {} # map of hostnames to server connections
+
+	allServers = {} # map of all hostnames to server connections (including )
+	otherServers = {}
 
 	#issue: it won't be able to connect to the other processes until they've been started
-	print("Executing the server code now!")
-
-	time.sleep(1)
+	time.sleep(0.5)
 
 
-	for serverIP in otherHosts:
-		full_hostname = f'http://{serverIP}:{str(myPort)}/'
-		servers[serverIP] = xmlrpc.client.ServerProxy(full_hostname)
+	for IPaddr in otherHosts:
+		fullHostname = f'http://{IPaddr}:{myPort}/'
+		allServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
+		if IPaddr != myPrivateIP:
+			otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
+
+	
 
 	print("Connected to other hosts")
-	print(servers)
 
-	with SimpleXMLRPCServer(('localhost', myPort), allow_none=True) as server:
+	with SimpleXMLRPCServer((myPrivateIP, myPort), allow_none=True) as server:
 		
 		server.register_introspection_functions()
 
@@ -112,15 +115,19 @@ try:
 			# guess: splitting up the password and storing it on difference 
 			print("trying to split up rest of password amongst other hosts")
 
-			# NOTE: this shouldn't be iterating through otherHosts, as that's just a list of IP's
-			for ipAddr, connection in random.shuffle(otherHosts):
-				print("current connection: ", ipAddr)
+			# shuffling through the other server connections and splitting up the current password 
+			# amongst those servers, and propagating the update to each server as well
+			for IPaddr in random.shuffle(otherServers.keys()):
+				# shuffling the IP addresses so that no machine stores the same order chunk
+				connection = otherServers[IPaddr]
+				print("current connection: ", IPaddr)
 				connection.put(key+str(count), chunks[count-1])
-				propogate(key, ipAddr, count)
+				propogate(key, IPaddr, count)
 				count+=1
 
 			print("password has been distributed. register job complete!")
 			return 1
+
 
 		def splitPassword(password, n):
 			output = []
@@ -160,7 +167,7 @@ try:
 			pieces = ['' for i in range(2)]
 
 			for pieceNum in machines:
-				if machines[pieceNum] == myname:
+				if machines[pieceNum] == myName:
 					pieces[pieceNum-1] = lookup(key + str(pieceNum))
 				else:
 					pieces[pieceNum-1] = s.lookup(key + str(pieceNum))
@@ -185,20 +192,47 @@ try:
 
 
 		# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
-		def addHost(user, host, pieceNum):
-			if user in userPasswordMap:
-				if pieceNum not in userPasswordMap[user]:
-					userPasswordMap[user][pieceNum] = host # machine that password chunk is stored on
+		# NOTE: potential update - change map structure so that sites are their own dictionary nested
+		# under user keys 
+		def addHost(userSite, hostAddr, pieceNum):
+			"""
+			Adds a new password piece number and the associated server node that is storing that
+			password to the user password map.
+			Example of new entry in the user map
+			
+			@params:
+				userSite (str) - A combination of a username and website that identifies a user's account on that site
+					ex. "zbookbin amazon"
+				hostAddr (str) - An http url identifying the server machine that is storing the password piece 
+					ex. "http://172.31.55.0:8012"
+				pieceNum (int) - A number that identifies the order of the password piece
+					ex. 3
+
+			@return:
+				None
+			"""
+			# if the user has passwords stored in the map already
+			if userSite in userPasswordMap:
+				# if this password chunk doesn't exist in the map
+				if pieceNum not in userPasswordMap[userSite]:
+					# create a new site + password entry for the existing user
+					userPasswordMap[userSite][pieceNum] = hostAddr # machine that password chunk is stored on
+				# otherwise, this password pairing exists in the map already, no updates needed
+			
+			# new user, create a new entry in the map
 			else:
-				userPasswordMap[user] = {pieceNum: host}
+				# associate the password piece number with the server host node that it is sto
+				userPasswordMap[userSite] = {pieceNum: hostAddr}
 
 
 		# user = id + site, host = machine hostname, pieceNum = password piece number
 		def propogate(user, host, pieceNum):
+			"""
+			
+			"""
 			addHost(user, host, pieceNum)
 
-			# NOTE: this shouldn't be iterating through otherHosts, as that's just a list of IP's
-			for ipAddr, connection in otherHosts:
+			for connection in otherServers.values():
 				connection.addHost(user, host, pieceNum)
 
 
@@ -212,7 +246,7 @@ try:
 		server.register_function(lookup)
 		server.register_function(splitPassword)
 		
-		print('about to serve forever')
+		print('about to serve forever - help im trapped in a process')
 		server.serve_forever()
 
 		sys.stdout.close()
