@@ -9,24 +9,24 @@ s4 = xmlrpc.client.ServerProxy('http://172.31.53.249:8012/')
 
 print("setting up client connection to rpc servers ")
 
-# s1.register('zbookbin', 'zbookbin nike.com', 'hello1234')
-# s1.register('dlittle', 'dlittle amazon.com', 'uhoh789')
+s1.register('zbookbin', 'zbookbin nike.com', 'hello1234')
+s1.register('dlittle', 'dlittle amazon.com', 'uhoh789')
 
-# s2.register('sbarker', 'sbarker gymshark.com', 'compscifun')
-# s1.register('zbookbin', 'zbookbin google.com', 'secondpass5')
-# s2.register('ahameed', 'ahameed bowdoin.edu', 'oops5678')
+s2.register('sbarker', 'sbarker gymshark.com', 'compscifun')
+s1.register('zbookbin', 'zbookbin google.com', 'secondpass5')
+s2.register('ahameed', 'ahameed bowdoin.edu', 'oops5678')
 
-print(s1.getStoreMap())
-print(s2.getStoreMap())
-print(s3.getStoreMap())
-print(s4.getStoreMap())
+print(s1.getPasswordData())
+print(s2.getPasswordData())
+print(s3.getPasswordData())
+print(s4.getPasswordData())
 
 print(s1.search('zbookbin google.com'))
 print(s1.search('zbookbin amazon.com'))
 
 
 # # Print list of available methods
-# print(s1.system.listMethods())
+print(s1.system.listMethods())
 # storemap of user + site keys and password fragments
 
 
