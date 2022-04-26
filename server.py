@@ -101,11 +101,8 @@ try:
 
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
 			put(key + '1', chunks[0]) # store chunk1 on this machine
-			print("before propagate to other hosts")
 			propagate(key, myPrivateIP, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
-			print("after propagate to other hosts")
 			
-			count = 2
 			# guess: splitting up the password and storing it on difference 
 			print("trying to split up rest of password amongst other hosts")
 
@@ -113,33 +110,33 @@ try:
 			# amongst those servers, and propagating the update to each server as well
 			shuffledServerAddrs = list(otherServers.keys())
 			random.shuffle(shuffledServerAddrs)
-			print(shuffledServerAddrs)
-			for IPaddr in shuffledServerAddrs:
-				# shuffling the IP addresses so that no machine stores the same order chunk
-				connection = otherServers[IPaddr]
-				print("current connection: ", IPaddr)
-				connection.put(key+str(count), chunks[count-1])
-				propagate(key, IPaddr, count)
-				count+=1
+
+			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 2)
 
 			print("redistributing password for replication")
-			first = shuffledServerAddrs[0]
-			shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
-			count = 1
-			print(shuffledServerAddrs)
-			for IPaddr in shuffledServerAddrs:
-				# shuffling the IP addresses so that no machine stores the same order chunk
-				connection = otherServers[IPaddr]
-				print("current connection: ", IPaddr)
-				connection.put(key+str(count), chunks[count-1])
-				propagate(key, IPaddr, count)
-				count+=1
+			shuffledServerAddrs = shiftList(shuffledServerAddrs)
+			
+			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 1)
 
 			put(key + '4', chunks[3]) # store last chunk on this machine
 			propagate(key, myPrivateIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
 			return 1
+
+		def shiftList(shuffledServerAddrs):
+			first = shuffledServerAddrs[0]
+			shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
+			return shuffledServerAddrs
+
+		def storeChunksAndPropogate(shuffledServerAddrs, key, chunks, count):
+			for IPaddr in shuffledServerAddrs:
+				# shuffling the IP addresses so that no machine stores the same order chunk
+				connection = otherServers[IPaddr]
+				print("current connection: ", IPaddr)
+				connection.put(key+str(count), chunks[count-1])
+				propagate(key, IPaddr, count)
+				count+=1
 
 
 		def splitPassword(password, n):
