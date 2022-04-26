@@ -20,6 +20,7 @@ TODO:
 	4. change split password to avoid adding spaces
 	5. add lots of comments and update variable names?
 	6. Add username security (don't allow user to access someone else's data)
+	7. Remove all constants so serverCount is the only thing that knows how many servers we have
 """
 
 import os
