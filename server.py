@@ -90,7 +90,7 @@ try:
 			if username != user:
 				return 'no permissions to register password for this user'
 
-			chunks = splitPassword(val, serverCount)
+			chunks = splitPassword(val, 4)
 
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
 			put(key + '1', chunks[0]) # store chunk1 on this machine
@@ -111,8 +111,8 @@ try:
 			print("redistributing password for replication")
 			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 1)
 
-			put(key + str(serverCount), chunks[serverCount-1]) # store last chunk on this machine
-			propagate(key, myPrivateIP, serverCount) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			put(key + '4', chunks[3]) # store last chunk on this machine
+			propagate(key, myPrivateIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
 			return 1
