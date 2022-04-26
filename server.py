@@ -19,6 +19,7 @@ TODO:
 	3. test replication with failed server
 	4. change split password to avoid adding spaces
 	5. add lots of comments and update variable names?
+	6. Add username security (don't allow user to access someone else's data)
 """
 
 import os
@@ -33,10 +34,8 @@ import math
 import random
 import time
 
-
-# put everything in a big try/except so we can print error messages
 try:
-	sys.stdout = open('outputServer.log', 'w')
+	sys.stdout = open('outputServer.log', 'w') # print statements go to this file
 	sys.stdout.reconfigure(line_buffering=True)
 
 	t = time.localtime()
@@ -45,46 +44,41 @@ try:
 	
 	localPasswordData = {}
 	userPasswordMap = {}
-	# NOTE: a potentially useful data structure will be mapping a hostAddr to all of the users/sites/pieceNums it stores. 
-	# this may be useful when we start replicating data. 
 
 	hostmap = {'52.90.4.149':'172.31.55.0', '54.236.244.145':'172.31.53.196', '54.211.164.149':'172.31.52.8', '54.205.63.8':'172.31.53.249'}
-	privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249' ]
-	# publicIPs = ['52.90.4.149', '54.236.244.145', '54.211.164.149', '54.205.63.8']
+	privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
+
 	myPublicIP = os.popen('curl -s ifconfig.me').readline()
 	myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
+	serverCount = len(privateIPs)
 	
 	print("my (private) IP addr: ", myPrivateIP)
 	print("my port num: ", myPort)
 	
 	otherHosts = privateIPs.copy()
 	otherHosts.remove(myPrivateIP)
-	myName = f'http://{myPrivateIP}:{myPort}'
 
+	myName = f'http://{myPrivateIP}:{myPort}' # we don't use myName at all
 
-	allServers = {} # map of all hostnames to server connections (including )
+	allServers = {} # we don't use this at all either
 	otherServers = {}
 
-	#issue: it won't be able to connect to the other processes until they've been started
-	time.sleep(0.5)
-
+	time.sleep(0.5) # I think we should make this longer since it'll only happen on startup
 
 	for IPaddr in otherHosts:
 		fullHostname = f'http://{IPaddr}:{myPort}/'
 		allServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 		if IPaddr != myPrivateIP:
 			otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
-	
 
 	print("Connected to other hosts")
 
 	with SimpleXMLRPCServer((myPrivateIP, myPort), allow_none=True) as server:
-		
 		server.register_introspection_functions()
 
 		# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
-		# across this machine and the other machine
+		# across this machine and the other machines
 		def register(username, key, val):
 			print('in server register function')
 			print("Current username:", username)
@@ -93,33 +87,31 @@ try:
 			user = key.split(' ')[0]
 
 			if username != user:
-				return 'no permissions'
+				return 'no permissions to register password for this user'
 
-			site = key.split(' ')[1]
+			chunks = splitPassword(val, serverCount)
 
-			chunks = splitPassword(val, 4)
-
-			# 'zbookbin amazon.com1', 'zbookbin amazon.com2'
+			# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
 			put(key + '1', chunks[0]) # store chunk1 on this machine
-			propagate(key, myPrivateIP, 1) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			propagate(key, myPrivateIP, 1) # tell other hosts about this
 			
-			# guess: splitting up the password and storing it on difference 
-			print("trying to split up rest of password amongst other hosts")
-
-			# shuffling through the other server connections and splitting up the current password 
-			# amongst those servers, and propagating the update to each server as well
+			# randomly shuffle which servers store which chunk numbers
 			shuffledServerAddrs = list(otherServers.keys())
 			random.shuffle(shuffledServerAddrs)
 
+			print("trying to split up rest of password amongst other hosts")
+			# shuffling through the other server connections and splitting up the current password 
+			# amongst those servers, and propagating the update to each server as well
 			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 2)
 
-			print("redistributing password for replication")
+			# shift randomized list by 1 so no server stores the same chunk twice
 			shuffledServerAddrs = shiftList(shuffledServerAddrs)
-			
+
+			print("redistributing password for replication")
 			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 1)
 
-			put(key + '4', chunks[3]) # store last chunk on this machine
-			propagate(key, myPrivateIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			put(key + str(serverCount), chunks[serverCount-1]) # store last chunk on this machine
+			propagate(key, myPrivateIP, serverCount) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
 			return 1
