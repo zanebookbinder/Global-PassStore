@@ -19,8 +19,8 @@ for ip in hosts:
 
 print("setting up client connection to rpc servers ")
 
-s['35.172.235.46'].register('zbookbin', 'zbookbin nike.com', 'hello1234')
 s['15.229.0.10'].register('dlittle', 'dlittle amazon.com', 'uhoh789')
+s['35.172.235.46'].register('zbookbin', 'zbookbin nike.com', 'hello1234')
 
 s['18.183.60.155'].register('sbarker', 'sbarker gymshark.com', 'compscifun')
 s['34.244.200.204'].register('zbookbin', 'zbookbin google.com', 'secondpass5')

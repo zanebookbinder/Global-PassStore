@@ -58,7 +58,8 @@ try:
 	# hostmap = {'52.90.4.149':'172.31.55.0', '54.236.244.145':'172.31.53.196', '54.211.164.149':'172.31.52.8', '54.205.63.8':'172.31.53.249'}
 	# privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
 
-	myPublicIP = os.popen('curl -s ifconfig.me').readline()
+	# myPublicIP = os.popen('curl -s ifconfig.me').readline()
+	myPublicIP = '0.0.0.0'
 	# myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
 	serverCount = len(hosts)
