@@ -46,36 +46,45 @@ try:
 	localPasswordData = {}
 	userPasswordMap = {}
 
-	hostmap = {'52.90.4.149':'172.31.55.0', '54.236.244.145':'172.31.53.196', '54.211.164.149':'172.31.52.8', '54.205.63.8':'172.31.53.249'}
-	privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
+	hosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105', 
+	'54.177.19.64', '34.222.143.244', '54.202.50.11', '13.245.182.179', '13.246.6.180', '18.166.176.112', 
+	'16.162.137.92', '108.136.118.131', '108.136.41.214', '13.233.255.217', '15.206.211.195', '15.152.35.76',
+	 '13.208.42.124', '13.125.213.112', '52.79.85.82', '18.136.203.66', '54.251.84.92', '3.104.66.60', 
+	 '3.26.227.87', '18.183.60.155', '54.95.115.193', '3.99.158.136', '3.98.96.39', '3.122.191.72', 
+	 '3.73.75.196', '34.244.200.204', '3.250.224.218', '18.130.129.70', '13.40.95.197', '15.160.192.179',
+	  '15.160.153.56', '35.180.109.137', '35.180.39.12', '13.48.137.111', '13.48.3.201', '15.185.175.128', 
+	  '157.175.185.52', '15.228.252.96', '15.229.0.10']
+
+	# hostmap = {'52.90.4.149':'172.31.55.0', '54.236.244.145':'172.31.53.196', '54.211.164.149':'172.31.52.8', '54.205.63.8':'172.31.53.249'}
+	# privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
 
 	myPublicIP = os.popen('curl -s ifconfig.me').readline()
-	myPrivateIP = hostmap[myPublicIP]
+	# myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
-	serverCount = len(privateIPs)
+	serverCount = len(hosts)
 	
-	print("my (private) IP addr: ", myPrivateIP)
+	print("my (public) IP addr: ", myPublicIP)
 	print("my port num: ", myPort)
 	
-	otherHosts = privateIPs.copy()
-	otherHosts.remove(myPrivateIP)
+	otherHosts = hosts.copy()
+	otherHosts.remove(myPublicIP)
 
-	myName = f'http://{myPrivateIP}:{myPort}' # we don't use myName at all
+	myName = f'http://{myPublicIP}:{myPort}' # we don't use myName at all
 
 	allServers = {} # we don't use this at all either
 	otherServers = {}
 
 	time.sleep(0.5) # I think we should make this longer since it'll only happen on startup
 
-	for IPaddr in otherHosts:
+	for IPaddr in hosts:
 		fullHostname = f'http://{IPaddr}:{myPort}/'
 		allServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
-		if IPaddr != myPrivateIP:
+		if IPaddr != myPublicIP:
 			otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 
 	print("Connected to other hosts")
 
-	with SimpleXMLRPCServer((myPrivateIP, myPort), allow_none=True) as server:
+	with SimpleXMLRPCServer((myPublicIP, myPort), allow_none=True) as server:
 		server.register_introspection_functions()
 
 		# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
@@ -94,7 +103,7 @@ try:
 
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
 			put(key + '1', chunks[0]) # store chunk1 on this machine
-			propagate(key, myPrivateIP, 1) # tell other hosts about this
+			propagate(key, myPublicIP, 1) # tell other hosts about this
 			
 			# randomly shuffle which servers store which chunk numbers
 			shuffledServerAddrs = list(otherServers.keys())
@@ -112,7 +121,7 @@ try:
 			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 1)
 
 			put(key + '4', chunks[3]) # store last chunk on this machine
-			propagate(key, myPrivateIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			propagate(key, myPublicIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
 			return 1
@@ -187,7 +196,7 @@ try:
 				while not foundPiece and hostAddr < len(hostAddrs):
 				# password exists on local machine password map
 				
-					if hostAddrs[hostAddr] == myPrivateIP:
+					if hostAddrs[hostAddr] == myPublicIP:
 						print("password piece found locally")
 						pieces[pieceNum-1] = lookup(key + str(pieceNum))
 						foundPiece = True
