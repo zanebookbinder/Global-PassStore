@@ -15,7 +15,7 @@ Functions to update:
 
 TODO:
 	1. updating above functions to be distributed  # I THINK THIS MIGHT BE DONE??
-	2. Figure out how to compact lines 115-137 (repeated for loop)
+	2. How do we replace data from failed nodes?
 	3. test replication with failed server
 	4. change split password to avoid adding spaces
 	5. add lots of comments and update variable names?
@@ -162,8 +162,14 @@ try:
 			return -1
 
 		# collect the pieces of a password given user + site
-		def search(key):
+		def search(username, key):
 			print("starting search...")
+
+			user = key.split(' ')[0]
+
+			if username != user:
+				return 'no permissions to search for this password'
+
 			if key not in userPasswordMap:
 				return 'No record of key'
 

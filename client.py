@@ -25,11 +25,11 @@ print(s1.getUserPasswordMap())
 print(s2.getUserPasswordMap())
 print(s3.getUserPasswordMap())
 
-print(s1.search('zbookbin google.com'))
-print(s1.search('zbookbin amazon.com'))
+print(s1.search('zbookbin', 'zbookbin google.com'))
+print(s1.search('zbookbin', 'zbookbin amazon.com'))
 
-print(s3.search('dlittle amazon.com'))
-print(s4.search('ahameed bowdoin.edu'))
+print(s3.search('dlittle', 'dlittle amazon.com'))
+print(s4.search('ahameed', 'ahameed bowdoin.edu'))
 
 # # Print list of available methods
 print(s1.system.listMethods())
