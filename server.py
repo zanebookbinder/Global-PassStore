@@ -60,6 +60,13 @@ try:
 
 	myPublicIP = os.popen('curl -s ifconfig.me').readline()
 	mytestIP = '0.0.0.0'
+
+	result = os.popen('ifconfig | grep inet | head -n 1').readline()
+	splitIP = result.split(' ')
+	splitIP = [i for i in splitIP if not i == '']
+	print('SPLITIP: ' + str(splitIP))
+	myPrivateIP = splitIP[1]
+
 	# myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
 	serverCount = len(hosts)
@@ -85,7 +92,7 @@ try:
 
 	print("Connected to other hosts")
 
-	with SimpleXMLRPCServer((mytestIP, myPort), allow_none=True) as server:
+	with SimpleXMLRPCServer((myPrivateIP, myPort), allow_none=True) as server:
 		server.register_introspection_functions()
 
 		# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
