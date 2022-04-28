@@ -116,9 +116,13 @@ try:
 
 			chunks = splitPassword(val, 4)
 
+			chunkStorageList = []
+
 			# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
 			put(key + '1', chunks[0]) # store chunk1 on this machine
-			propagate(key, myPublicIP, 1) # tell other hosts about this
+
+			chunkStorageList.append([myPublicIP, 1])
+			# propagate(key, myPublicIP, 1) # tell other hosts about this
 			
 			# randomly shuffle which servers store which chunk numbers
 			shuffledServerAddrs = list(otherServers.keys())
@@ -127,7 +131,7 @@ try:
 			print("trying to split up rest of password amongst other hosts")
 			# shuffling through the other server connections and splitting up the current password 
 			# amongst those servers, and propagating the update to each server as well
-			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 2)
+			storeChunksAndPropogate(shuffledServerAddrs, key, chunkStorageList, chunks, 2)
 
 			print("trying to shuffle")
 
@@ -138,7 +142,11 @@ try:
 			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 1)
 
 			put(key + '4', chunks[3]) # store last chunk on this machine
-			propagate(key, myPublicIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
+			chunkStorageList.append([myPublicIP, 4])
+
+
+			propogate(key, chunkStorageList)
+			# propagate(key, myPublicIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
 			return 1
@@ -148,13 +156,14 @@ try:
 			shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
 			return shuffledServerAddrs
 
-		def storeChunksAndPropogate(shuffledServerAddrs, key, chunks, count):
+		def storeChunksAndPropogate(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 			randomHosts = random.sample(shuffledServerAddrs, 3)
 			for randomHost in randomHosts:
 				connection = otherServers[randomHost]
 				print("current connection: ", randomHost)
 				connection.put(key+str(count), chunks[count-1])
-				propagate(key, randomHost, count)
+				chunkStorageList.append([randomHost, count])
+				# propagate(key, randomHost, count)
 				count+=1
 
 		def splitPassword(password, n):
@@ -286,18 +295,37 @@ try:
 				# associate the password piece number with the server host node that it is sto
 				userPasswordMap[userSite] = {pieceNum: [hostAddr]}
 
+		def addHosts(userSite, chunkStorageList):
+			for hostToChunk in chunkStorageList:
+				hostAddr = hostToChunk[0]
+				pieceNum = hostToChunk[1]
+				if userSite in userPasswordMap:
+					# if this password chunk number doesn't exist in the map
+					if pieceNum not in userPasswordMap[userSite]:
+						# create a new site + password entry for the existing user
+						userPasswordMap[userSite][pieceNum] = [hostAddr] # machine that password chunk is stored on
+					# otherwise, this password pairing exists in the map already, no updates needed
+					else:
+						userPasswordMap[userSite][pieceNum].append(hostAddr)
+				
+				# new user, create a new entry in the map
+				else:
+					# associate the password piece number with the server host node that it is sto
+					userPasswordMap[userSite] = {pieceNum: [hostAddr]}
+
 
 		# user = id + site, host = machine hostname, pieceNum = password piece number
-		def propagate(user, host, pieceNum):
+		def propagate(user, chunkStorageList):
 			"""
 			
 			"""
+
 			print("updating local user-password map")
-			addHost(user, host, pieceNum)
+			addHosts(user, chunkStorageList)
 
 			print("sending update to other server nodes")
 			for ip, connection in otherServers.items():
-				connection.addHost(user, host, pieceNum)
+				connection.addHosts(user, chunkStorageList)
 
 
 		server.register_function(register)
@@ -306,6 +334,7 @@ try:
 		server.register_function(getUserPasswordMap)
 		server.register_function(getLocalPasswordData)
 		server.register_function(addHost)
+		server.register_function(addHosts)
 		server.register_function(propagate)
 		server.register_function(lookup)
 		server.register_function(splitPassword)
