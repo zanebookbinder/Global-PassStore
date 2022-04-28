@@ -61,15 +61,31 @@ try:
 	myPublicIP = os.popen('curl -s ifconfig.me').readline()
 	mytestIP = '0.0.0.0'
 
-	result = os.popen("ifconfig | grep inet | head -n 1").readline()
-	print("Result")
-	print(result)
-	# print('RESULT: ' + result))
-	splitIP = result.split(' ')
-	print(splitIP)
-	splitIP = [i for i in splitIP if i != '']
-	print('SPLITIP: ' + str(splitIP))
-	myPrivateIP = splitIP[1]
+	res = os.popen('ifconfig | grep inet | head -n 1').readline()
+	print(res)
+	splitIP = res.split(' ')
+	print(str(splitIP))
+
+	count = 0
+	for s in splitIP:
+		if s != '':
+			count += 1
+
+		if count == 2:
+			myPrivateIP = s
+			break
+
+	print(myPrivateIP)
+
+	# result = os.popen("ifconfig | grep inet | head -n 1").readline()
+	# print("Result")
+	# print(result)
+	# # print('RESULT: ' + result))
+	# splitIP = result.split(' ')
+	# print(splitIP)
+	# splitIP = [i for i in splitIP if i != '']
+	# print('SPLITIP: ' + str(splitIP))
+	# myPrivateIP = splitIP[1]
 
 	# myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
