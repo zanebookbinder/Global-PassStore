@@ -61,7 +61,7 @@ try:
 	myPublicIP = os.popen('curl -s ifconfig.me').readline()
 	mytestIP = '0.0.0.0'
 
-	result = os.popen("ifconfig | grep inet | head -n 1").read()
+	result = os.popen("ifconfig | grep inet | head -n 1").readline()
 	print("Result")
 	print(result)
 	# print('RESULT: ' + result))

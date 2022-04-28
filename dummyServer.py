@@ -21,6 +21,8 @@ for s in splitIP:
         myPrivateIP = s
         break
 
+print(myPrivateIP)
+
 with SimpleXMLRPCServer((myPrivateIP, 8013)) as server:
     server.register_introspection_functions()
 
