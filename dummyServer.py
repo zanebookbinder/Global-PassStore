@@ -18,7 +18,7 @@ for s in splitIP:
         count += 1
 
     if count == 2:
-        myPrivateIP = S
+        myPrivateIP = s
         break
 
 with SimpleXMLRPCServer((myPrivateIP, 8013)) as server:
