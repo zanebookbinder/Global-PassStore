@@ -23,7 +23,7 @@ for s in splitIP:
 
 print(myPrivateIP)
 
-with SimpleXMLRPCServer((myPrivateIP, 8013)) as server:
+with SimpleXMLRPCServer(('35.172.235.46', 8013)) as server:
     server.register_introspection_functions()
 
     def add(x, y):
