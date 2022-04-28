@@ -15,4 +15,5 @@ KEYPAIR_PATH=$1
 
 for HOSTNAME in ${HOSTS} ; do
     ssh -i ${KEYPAIR_PATH}/$USER-keypair $USER@${HOSTNAME} "pkill -u $USER -f '^python3 server.py 8012$'"
+    echo "Done killing servers"
 done

@@ -59,6 +59,7 @@ try:
 	# privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
 
 	myPublicIP = os.popen('curl -s ifconfig.me').readline()
+	mytestIP = '0.0.0.0'
 	# myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
 	serverCount = len(hosts)
@@ -84,7 +85,7 @@ try:
 
 	print("Connected to other hosts")
 
-	with SimpleXMLRPCServer((myPublicIP, myPort), allow_none=True) as server:
+	with SimpleXMLRPCServer((mytestIP, myPort), allow_none=True) as server:
 		server.register_introspection_functions()
 
 		# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
