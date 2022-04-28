@@ -9,8 +9,7 @@ import sys
 import time
 
 
-
-with SimpleXMLRPCServer(('localhost', 8000)) as server:
+with SimpleXMLRPCServer(('172.31.70.66', 8013)) as server:
     server.register_introspection_functions()
 
     def add(x, y):
