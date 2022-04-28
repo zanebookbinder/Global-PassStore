@@ -129,6 +129,8 @@ try:
 			# amongst those servers, and propagating the update to each server as well
 			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 2)
 
+			print("trying to shuffle")
+
 			# shift randomized list by 1 so no server stores the same chunk twice
 			shuffledServerAddrs = shiftList(shuffledServerAddrs)
 
@@ -147,14 +149,13 @@ try:
 			return shuffledServerAddrs
 
 		def storeChunksAndPropogate(shuffledServerAddrs, key, chunks, count):
-			for IPaddr in shuffledServerAddrs:
-				# shuffling the IP addresses so that no machine stores the same order chunk
-				connection = otherServers[IPaddr]
-				print("current connection: ", IPaddr)
+			randomHosts = random.sample(shuffledServerAddrs, 3)
+			for randomHost in randomHosts:
+				connection = otherServers[randomHost]
+				print("current connection: ", randomHost)
 				connection.put(key+str(count), chunks[count-1])
-				propagate(key, IPaddr, count)
+				propagate(key, randomHost, count)
 				count+=1
-
 
 		def splitPassword(password, n):
 			output = []
@@ -296,7 +297,6 @@ try:
 
 			print("sending update to other server nodes")
 			for ip, connection in otherServers.items():
-				print('current connnection CHECK THIS: ', ip, connection)
 				connection.addHost(user, host, pieceNum)
 
 
