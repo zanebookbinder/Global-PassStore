@@ -64,6 +64,8 @@ try:
 	# res = os.popen('ifconfig | grep inet | head -n 1').readline()
 	res = os.popen('ifconfig | grep inet | head -n 1')
 	print(res)
+	res = res.read()
+	print(res)
 	splitIP = res.split(' ')
 	print(str(splitIP))
 
