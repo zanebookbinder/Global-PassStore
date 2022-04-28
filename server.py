@@ -139,7 +139,7 @@ try:
 			shuffledServerAddrs = shiftList(shuffledServerAddrs)
 
 			print("redistributing password for replication")
-			storeChunksAndPropogate(shuffledServerAddrs, key, chunks, 1)
+			storeChunksAndPropogate(shuffledServerAddrs, key, chunkStorageList, chunks, 1)
 
 			put(key + '4', chunks[3]) # store last chunk on this machine
 			chunkStorageList.append([myPublicIP, 4])
