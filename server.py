@@ -58,11 +58,7 @@ try:
 	# hostmap = {'52.90.4.149':'172.31.55.0', '54.236.244.145':'172.31.53.196', '54.211.164.149':'172.31.52.8', '54.205.63.8':'172.31.53.249'}
 	# privateIPs = [ '172.31.55.0', '172.31.53.196', '172.31.52.8', '172.31.53.249']
 
-	myPublicIP = os.popen('curl -s ifconfig.me').readline()
-	mytestIP = '0.0.0.0'
-
-	# res = os.popen('ifconfig | grep inet | head -n 1').readline()
-	res = os.popen('ifconfig').readline()
+	res = os.popen('ifconfig | grep inet | head -n 1').readline()
 	print("res:")
 	print(res)
 	splitIP = res.split(' ')
@@ -77,6 +73,9 @@ try:
 			break
 
 	print(myPrivateIP)
+
+	myPublicIP = os.popen('curl -s ifconfig.me').readline()
+	mytestIP = '0.0.0.0'
 
 	# result = os.popen("ifconfig | grep inet | head -n 1").readline()
 	# print("Result")
