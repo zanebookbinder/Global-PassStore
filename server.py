@@ -61,9 +61,6 @@ try:
 	mytestIP = '0.0.0.0'
 
 	res = os.popen('/sbin/ifconfig | grep inet | head -n 1').readline()
-	print("res:")
-	print(type(res))
-	print(res)
 	splitIP = res.split(' ')
 
 	count = 0
@@ -75,17 +72,7 @@ try:
 			myPrivateIP = s
 			break
 
-	print(myPrivateIP)
-
-	# result = os.popen("ifconfig | grep inet | head -n 1").readline()
-	# print("Result")
-	# print(result)
-	# # print('RESULT: ' + result))
-	# splitIP = result.split(' ')
-	# print(splitIP)
-	# splitIP = [i for i in splitIP if i != '']
-	# print('SPLITIP: ' + str(splitIP))
-	# myPrivateIP = splitIP[1]
+	print('myPrivateIP:', myPrivateIP)
 
 	# myPrivateIP = hostmap[myPublicIP]
 	myPort = int(sys.argv[1])
@@ -102,7 +89,7 @@ try:
 	allServers = {} # we don't use this at all either
 	otherServers = {}
 
-	time.sleep(0.5) # I think we should make this longer since it'll only happen on startup
+	time.sleep(3) # I think we should make this longer since it'll only happen on startup
 
 	for IPaddr in hosts:
 		fullHostname = f'http://{IPaddr}:{myPort}/'
@@ -308,7 +295,8 @@ try:
 			addHost(user, host, pieceNum)
 
 			print("sending update to other server nodes")
-			for connection in otherServers.values():
+			for ip, connection in otherServers.items():
+				print('current connnection CHECK THIS: ', ip, connection)
 				connection.addHost(user, host, pieceNum)
 
 
