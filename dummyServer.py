@@ -9,8 +9,8 @@ import sys
 import time
 
 
-myPrivateIP = os.popen('ifconfig | grep inet | head -n 1').readline()
-splitIP = myPrivateIP.split(' ')
+res = os.popen('ifconfig | grep inet | head -n 1').readline()
+splitIP = res.split(' ')
 
 count = 0
 for s in splitIP:
