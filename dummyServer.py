@@ -9,6 +9,9 @@ import sys
 import time
 
 
+myPrivateIP = os.popen('curl -s ifconfig.me').readline()
+print(myPrivateIP)
+
 with SimpleXMLRPCServer(('172.31.70.66', 8013)) as server:
     server.register_introspection_functions()
 
