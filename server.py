@@ -35,6 +35,27 @@ import math
 import random
 import time
 
+sys.stdout = open('outputServer.log', 'w') # print statements go to this file
+sys.stdout.reconfigure(line_buffering=True)
+
+res = os.popen('ifconfig | grep inet | head -n 1').readline()
+print("res:")
+print(type(res))
+print(res)
+splitIP = res.split(' ')
+
+count = 0
+for s in splitIP:
+	if s != '':
+		count += 1
+
+	if count == 2:
+		myPrivateIP = s
+		break
+
+print(myPrivateIP)
+exit(0)
+
 try:
 	sys.stdout = open('outputServer.log', 'w') # print statements go to this file
 	sys.stdout.reconfigure(line_buffering=True)
