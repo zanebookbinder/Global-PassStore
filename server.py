@@ -63,6 +63,7 @@ try:
 
 	result = os.popen('ifconfig | grep inet | head -n 1').readline()
 	splitIP = result.split(' ')
+	print(splitIP)
 	splitIP = [i for i in splitIP if i != '']
 	print('SPLITIP: ' + str(splitIP))
 	myPrivateIP = splitIP[1]
