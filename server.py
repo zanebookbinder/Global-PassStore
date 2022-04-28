@@ -131,7 +131,7 @@ try:
 			print("trying to split up rest of password amongst other hosts")
 			# shuffling through the other server connections and splitting up the current password 
 			# amongst those servers, and propagating the update to each server as well
-			storeChunksAndPropogate(shuffledServerAddrs, key, chunkStorageList, chunks, 2)
+			storeChunksAndPropagate(shuffledServerAddrs, key, chunkStorageList, chunks, 2)
 
 			print("trying to shuffle")
 
@@ -139,13 +139,13 @@ try:
 			shuffledServerAddrs = shiftList(shuffledServerAddrs)
 
 			print("redistributing password for replication")
-			storeChunksAndPropogate(shuffledServerAddrs, key, chunkStorageList, chunks, 1)
+			storeChunksAndPropagate(shuffledServerAddrs, key, chunkStorageList, chunks, 1)
 
 			put(key + '4', chunks[3]) # store last chunk on this machine
 			chunkStorageList.append([myPublicIP, 4])
 
 
-			propogate(key, chunkStorageList)
+			propagate(key, chunkStorageList)
 			# propagate(key, myPublicIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
 
 			print("password has been distributed twice. register job complete!")
@@ -156,7 +156,7 @@ try:
 			shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
 			return shuffledServerAddrs
 
-		def storeChunksAndPropogate(shuffledServerAddrs, key, chunkStorageList, chunks, count):
+		def storeChunksAndPropagate(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 			randomHosts = random.sample(shuffledServerAddrs, 3)
 			for randomHost in randomHosts:
 				connection = otherServers[randomHost]
