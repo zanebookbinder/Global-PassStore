@@ -62,7 +62,7 @@ try:
 	mytestIP = '0.0.0.0'
 
 	# res = os.popen('ifconfig | grep inet | head -n 1').readline()
-	res = os.popen('ifconfig | grep inet | head -n 1').readline()
+	res = os.popen('ifconfig | grep inet | head -n 1').read()
 	print("res:")
 	print(res)
 	splitIP = res.split(' ')
