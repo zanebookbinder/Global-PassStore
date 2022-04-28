@@ -10,10 +10,18 @@ import time
 
 
 myPrivateIP = os.popen('ifconfig | grep inet | head -n 1').readline()
+splitIP = myPrivateIP.split(' ')
 
-print(myPrivateIP.split(' '))
+count = 0
+for s in splitIP:
+    if s != '':
+        count += 1
 
-with SimpleXMLRPCServer(('172.31.70.66', 8013)) as server:
+    if count == 2:
+        myPrivateIP = S
+        break
+
+with SimpleXMLRPCServer((myPrivateIP, 8013)) as server:
     server.register_introspection_functions()
 
     def add(x, y):
