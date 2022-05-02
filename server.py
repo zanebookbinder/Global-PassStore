@@ -232,38 +232,6 @@ def getUserPasswordMap():
 def getLocalPasswordData():
 	return str(localPasswordData)
 
-def addHost(userSite, hostAddr, pieceNum):
-	"""
-	Adds a new password piece number and the associated server node that is storing that
-	password to the user password map.
-	Example of new entry in the user map
-	
-	@params:
-		userSite (str) - A combination of a username and website that identifies a user's account on that site
-			ex. "zbookbin amazon"
-		hostAddr (str) - An http url identifying the server machine that is storing the password piece 
-			ex. "http://172.31.55.0:8012"
-		pieceNum (int) - A number that identifies the order of the password piece
-			ex. 3
-	@return:
-		None
-	"""
-	# if the user has passwords stored in the map already
-	
-	if userSite in userPasswordMap:
-		# if this password chunk number doesn't exist in the map
-		if pieceNum not in userPasswordMap[userSite]:
-			# create a new site + password entry for the existing user
-			userPasswordMap[userSite][pieceNum] = [hostAddr] # machine that password chunk is stored on
-		# otherwise, this password pairing exists in the map already, no updates needed
-		else:
-			userPasswordMap[userSite][pieceNum].append(hostAddr)
-	
-	# new user, create a new entry in the map
-	else:
-		# associate the password piece number with the server host node that it is sto
-		userPasswordMap[userSite] = {pieceNum: [hostAddr]}
-
 def addHosts(userSite, chunkStorageList):
 	"""
 	Update this node's userPasswordMap to include the new piece/server mappings.
@@ -293,7 +261,7 @@ def addHosts(userSite, chunkStorageList):
 # user = id + site, host = machine hostname, pieceNum = password piece number
 def propagate(user, chunkStorageList):
 	"""
-	
+	Informs other hosts of updated password chunk mapping to servers
 	"""
 
 	print("updating local user-password map")
@@ -308,14 +276,16 @@ def propagate(user, chunkStorageList):
 		threads.append(threading.Thread(target = propogateThread, args = (user, hosts_split[i], chunkStorageList,)))
 	
 	for thread in threads:
+		print('starting new thread')
 		thread.start()
 
 	for thread in threads:
 		thread.join()
 
 def propogateThread(user, hostsList, chunkStorageList):
+	print('propogating to new hostsList')
 	for ip in hostsList:
-		otherServers[ip].addHost(user, chunkStorageList)
+		otherServers[ip].addHosts(user, chunkStorageList)
 
 def getPrivateIP():
 	global myPrivateIP
