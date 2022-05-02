@@ -14,11 +14,13 @@ Functions to update:
 		
 
 TODO:
+	0. make location-based clusters
 	1. How do we replace replicated data when a node fails?
 	2. change split password to avoid adding spaces
-	3. Add username security (don't allow user to access someone else's data)
-	4. Remove all constants so serverCount is the only thing that knows how many servers we have
-	5. Smartly make clusters based on ec2 instance location
+	3. Make a better scheme for replicating (cluster-based)
+	4. Add username security (don't allow user to access someone else's data)
+	5. Remove all constants so serverCount is the only thing that knows how many servers we have
+	6. Smartly make clusters based on ec2 instance location
 """
 
 import os
@@ -33,29 +35,45 @@ import math
 import random
 import time
 
+hosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105', 
+'54.177.19.64', '34.222.143.244', '54.202.50.11', '13.245.182.179', '13.246.6.180', '18.166.176.112', 
+'16.162.137.92', '108.136.118.131', '108.136.41.214', '13.233.255.217', '15.206.211.195', '15.152.35.76',
+'13.208.42.124', '13.125.213.112', '52.79.85.82', '18.136.203.66', '54.251.84.92', '3.104.66.60', 
+'3.26.227.87', '18.183.60.155', '54.95.115.193', '3.99.158.136', '3.98.96.39', '3.122.191.72', 
+'3.73.75.196', '34.244.200.204', '3.250.224.218', '18.130.129.70', '13.40.95.197', '15.160.192.179',
+'15.160.153.56', '35.180.109.137', '35.180.39.12', '13.48.137.111', '13.48.3.201', '15.185.175.128', 
+'157.175.185.52', '15.228.252.96', '15.229.0.10']
+otherHosts = hosts.copy()
+
+localPasswordData = {}
+userPasswordMap = {}
+otherServers = {}
 
 
-# registers a username (zbookbin), key (zbookbin amazon.com), value (password)
-# across this machine and the other machines
 def register(username, key, val):
+	"""
+	registers a username, key, value across this and other
+	machines. Only called via RPC from client program.
+	@params:
+		username: e.g. zbookbin
+		key: combination of username and url, e.g. 'zbookbin amazon.com
+		value: password to store
+	"""
 	print('in server register function')
 	print("Current username:", username)
 	print("Current key:", key)
 
 	user = key.split(' ')[0]
-
 	if username != user:
 		return 'no permissions to register password for this user'
 
 	chunks = splitPassword(val, 4)
-
 	chunkStorageList = []
 
 	# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
 	put(key + '1', chunks[0]) # store chunk1 on this machine
 
 	chunkStorageList.append([myPublicIP, 1])
-	# propagate(key, myPublicIP, 1) # tell other hosts about this
 	
 	# randomly shuffle which servers store which chunk numbers
 	shuffledServerAddrs = list(otherServers.keys())
@@ -64,23 +82,20 @@ def register(username, key, val):
 	print("trying to split up rest of password amongst other hosts")
 	# shuffling through the other server connections and splitting up the current password 
 	# amongst those servers, and propagating the update to each server as well
-	storeChunksAndPropagate(shuffledServerAddrs, key, chunkStorageList, chunks, 2)
-
-	print("trying to shuffle")
+	storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, 2)
 
 	# shift randomized list by 1 so no server stores the same chunk twice
 	shuffledServerAddrs = shiftList(shuffledServerAddrs)
 
 	print("redistributing password for replication")
-	storeChunksAndPropagate(shuffledServerAddrs, key, chunkStorageList, chunks, 1)
+	storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, 1)
 
 	put(key + '4', chunks[3]) # store last chunk on this machine
+	# why do we do this?
 	chunkStorageList.append([myPublicIP, 4])
 
-
+	# propagate the updated list to all machines
 	propagate(key, chunkStorageList)
-	# propagate(key, myPublicIP, 4) # tell other host that this machines stores a piece of the zbookin amazon.com entry
-
 	print("password has been distributed twice. register job complete!")
 	return 1
 
@@ -89,14 +104,16 @@ def shiftList(shuffledServerAddrs):
 	shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
 	return shuffledServerAddrs
 
-def storeChunksAndPropagate(shuffledServerAddrs, key, chunkStorageList, chunks, count):
+def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
+	"""
+	store 
+	"""
 	randomHosts = random.sample(shuffledServerAddrs, 3)
 	for randomHost in randomHosts:
 		connection = otherServers[randomHost]
 		print("current connection: ", randomHost)
 		connection.put(key+str(count), chunks[count-1])
 		chunkStorageList.append([randomHost, count])
-		# propagate(key, randomHost, count)
 		count+=1
 
 def splitPassword(password, n):
@@ -192,43 +209,14 @@ def getLocalPasswordData():
 	return str(localPasswordData)
 
 
-# zbookbin amazon: {1: '8000', 2: '8001'} if password abcdef
-# NOTE: potential update - change map structure so that sites are their own dictionary nested
-# under user keys 
-def addHost(userSite, hostAddr, pieceNum):
-	"""
-	Adds a new password piece number and the associated server node that is storing that
-	password to the user password map.
-	Example of new entry in the user map
-	
-	@params:
-		userSite (str) - A combination of a username and website that identifies a user's account on that site
-			ex. "zbookbin amazon"
-		hostAddr (str) - An http url identifying the server machine that is storing the password piece 
-			ex. "http://172.31.55.0:8012"
-		pieceNum (int) - A number that identifies the order of the password piece
-			ex. 3
-
-	@return:
-		None
-	"""
-	# if the user has passwords stored in the map already
-	
-	if userSite in userPasswordMap:
-		# if this password chunk number doesn't exist in the map
-		if pieceNum not in userPasswordMap[userSite]:
-			# create a new site + password entry for the existing user
-			userPasswordMap[userSite][pieceNum] = [hostAddr] # machine that password chunk is stored on
-		# otherwise, this password pairing exists in the map already, no updates needed
-		else:
-			userPasswordMap[userSite][pieceNum].append(hostAddr)
-	
-	# new user, create a new entry in the map
-	else:
-		# associate the password piece number with the server host node that it is sto
-		userPasswordMap[userSite] = {pieceNum: [hostAddr]}
-
 def addHosts(userSite, chunkStorageList):
+	"""
+	Update this node's userPasswordMap to include the new piece/server mappings.
+	@params:
+		userSite (str): combination of a username and website
+		chunkStorageList: updated mapping of which servers the chunks of this password are stored on.
+	"""
+	# NOTE: potential update - change map structure so that sites are their own dictionary nested
 	for hostToChunk in chunkStorageList:
 		hostAddr = hostToChunk[0]
 		pieceNum = hostToChunk[1]
@@ -287,17 +275,8 @@ def main():
 		current_time = time.strftime("%H:%M:%S", t)
 		print("Running at:", current_time)
 		
-		localPasswordData = {}
-		userPasswordMap = {}
 
-		hosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105', 
-		'54.177.19.64', '34.222.143.244', '54.202.50.11', '13.245.182.179', '13.246.6.180', '18.166.176.112', 
-		'16.162.137.92', '108.136.118.131', '108.136.41.214', '13.233.255.217', '15.206.211.195', '15.152.35.76',
-		'13.208.42.124', '13.125.213.112', '52.79.85.82', '18.136.203.66', '54.251.84.92', '3.104.66.60', 
-		'3.26.227.87', '18.183.60.155', '54.95.115.193', '3.99.158.136', '3.98.96.39', '3.122.191.72', 
-		'3.73.75.196', '34.244.200.204', '3.250.224.218', '18.130.129.70', '13.40.95.197', '15.160.192.179',
-		'15.160.153.56', '35.180.109.137', '35.180.39.12', '13.48.137.111', '13.48.3.201', '15.185.175.128', 
-		'157.175.185.52', '15.228.252.96', '15.229.0.10']
+
 
 		myPublicIP = os.popen('curl -s ifconfig.me').readline()
 		myPrivateIP = getPrivateIP()
@@ -308,19 +287,14 @@ def main():
 		print("my (public) IP addr: ", myPublicIP)
 		print("my (private) IP addr: ", myPrivateIP)
 		print("my port num: ", myPort)
-		
-		otherHosts = hosts.copy()
-		otherHosts.remove(myPublicIP)
 
-		allServers = {} # we don't use this at all either
-		otherServers = {}
+		otherHosts.remove(myPublicIP)
 
 		time.sleep(3) # I think we should make this longer since it'll only happen on startup
 
 		for IPaddr in hosts:
-			fullHostname = f'http://{IPaddr}:{myPort}/'
-			allServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 			if IPaddr != myPublicIP:
+				fullHostname = f'http://{IPaddr}:{myPort}/'
 				otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 
 		print("Connected to other hosts")
@@ -332,7 +306,6 @@ def main():
 			server.register_function(put)
 			server.register_function(getUserPasswordMap)
 			server.register_function(getLocalPasswordData)
-			server.register_function(addHost)
 			server.register_function(addHosts)
 			server.register_function(propagate)
 			server.register_function(lookup)
