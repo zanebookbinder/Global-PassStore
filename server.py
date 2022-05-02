@@ -349,7 +349,7 @@ def main():
 			server.register_function(addHosts)
 			server.register_function(propagate)
 			server.register_function(lookup)
-			server.register_function(splitPassword)
+			server.register_function(split_evenly)
 			
 			print('about to serve forever')
 			server.serve_forever()
