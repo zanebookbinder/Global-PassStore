@@ -2,6 +2,7 @@ import xmlrpc.client
 import sys
 
 # Should we have the user connect to one machine?
+# Should we add something telling the user where their password is stored?
 
 myServer = '35.172.235.46'
 ipString = 'http://' + myServer + ':8012/'
@@ -29,8 +30,10 @@ while(True):
 
 def register(user, url, password):
 	userUrl = user + ' ' + url
-	connection.register(user, , userUrl, password)
-	return "Success!"
+	storedLocations = connection.register(user, , userUrl, password)
+	if type(storedLocations) == list:
+		return "Success! Your password is stored in these places: " + str(storedLocations)
+	return "Failure! " + storedLocations
 
 def search(user, url):
 	userUrl = user + ' ' + url
