@@ -13,7 +13,7 @@ HOSTS="35.172.235.46 44.199.229.51 3.22.185.101
 
 IDX=0
 for HOSTNAME in ${HOSTS} ; do
-    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "pkill -u $USER -f '^python3 server.py 8013$'"
+    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "pkill -u $USER -f '^python3 server.py 8012$'"
     echo "server ${IDX} killed"
     let IDX=${IDX}+1
 done
