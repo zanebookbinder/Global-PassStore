@@ -2,23 +2,11 @@
 Program Description: Distributed password manager server that stores and manages various usernames,
 websites, and 
 
-Functions to update:
-	register(username, key, val):
-		* needs to be updated so that it can split the value (password) along multiple machines
-	
-	search(key):
-		* update for multiple machines
-
-	propagate(user, host, piece_num):
-		* update information for all machines in distributed system
-		
-
 TODO:
 	1. make location-based clusters
-	2. change split password to avoid adding spaces
-	3. Make a better scheme for replicating (cluster-based)
-	4. Add username security (don't allow user to access someone else's data)
-	5. Remove all constants so serverCount is the only thing that knows how many servers we have
+	2. Make a better scheme for replicating (cluster-based)
+	3. Add username security (don't allow user to access someone else's data)
+	4. Remove all constants so serverCount is the only thing that knows how many servers we have
 """
 
 import os
@@ -138,17 +126,19 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 def splitPassword(password, n):
 	output = []
 
-	# could probably make this more efficient with if instead of while
-	while (len(password) % n) != 0:
-		password += ' '
-
-	size = int(len(password)/n)
-
+	size = math.floor(len(password)/n)
 	start = 0
 	end = size
 
+	count = 0
+
 	for start in range(0, len(password), size):
-		output.append(password[start:start+size])
+		if count == n-1:
+			output.append(password[start:])
+			break
+		else:
+			output.append(password[start:start+size])
+		count+=1
 
 	return output
 
