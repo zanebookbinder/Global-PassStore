@@ -14,8 +14,7 @@ Functions to update:
 		
 
 TODO:
-	0. make location-based clusters
-	1. How do we replace replicated data when a node fails?
+	1. make location-based clusters
 	2. change split password to avoid adding spaces
 	3. Make a better scheme for replicating (cluster-based)
 	4. Add username security (don't allow user to access someone else's data)
