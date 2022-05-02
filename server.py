@@ -20,7 +20,6 @@ TODO:
 	3. Make a better scheme for replicating (cluster-based)
 	4. Add username security (don't allow user to access someone else's data)
 	5. Remove all constants so serverCount is the only thing that knows how many servers we have
-	6. Smartly make clusters based on ec2 instance location
 """
 
 import os
@@ -34,7 +33,7 @@ import sys
 import math
 import random
 import time
-from theading import Thread
+import threading
 
 hosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105', 
 '54.177.19.64', '34.222.143.244', '54.202.50.11', '13.245.182.179', '13.246.6.180', '18.166.176.112', 
@@ -154,7 +153,7 @@ def splitPassword(password, n):
 
 	return output
 
-def split_list_equally(l, n):
+def split_list_evenly(l, n):
 	k, m = divmod(len(l), n)
 	return list(l[i*k + min(i, m):(i + 1) * k + min(i+1, m)] for i in range(n))
 
@@ -233,6 +232,37 @@ def getUserPasswordMap():
 def getLocalPasswordData():
 	return str(localPasswordData)
 
+def addHost(userSite, hostAddr, pieceNum):
+	"""
+	Adds a new password piece number and the associated server node that is storing that
+	password to the user password map.
+	Example of new entry in the user map
+	
+	@params:
+		userSite (str) - A combination of a username and website that identifies a user's account on that site
+			ex. "zbookbin amazon"
+		hostAddr (str) - An http url identifying the server machine that is storing the password piece 
+			ex. "http://172.31.55.0:8012"
+		pieceNum (int) - A number that identifies the order of the password piece
+			ex. 3
+	@return:
+		None
+	"""
+	# if the user has passwords stored in the map already
+	
+	if userSite in userPasswordMap:
+		# if this password chunk number doesn't exist in the map
+		if pieceNum not in userPasswordMap[userSite]:
+			# create a new site + password entry for the existing user
+			userPasswordMap[userSite][pieceNum] = [hostAddr] # machine that password chunk is stored on
+		# otherwise, this password pairing exists in the map already, no updates needed
+		else:
+			userPasswordMap[userSite][pieceNum].append(hostAddr)
+	
+	# new user, create a new entry in the map
+	else:
+		# associate the password piece number with the server host node that it is sto
+		userPasswordMap[userSite] = {pieceNum: [hostAddr]}
 
 def addHosts(userSite, chunkStorageList):
 	"""
@@ -270,20 +300,21 @@ def propagate(user, chunkStorageList):
 	addHosts(user, chunkStorageList)
 
 	print("sending update to other server nodes")
+	num_threads = 4
+	hosts_split = split_list_evenly(hosts, num_threads)
 	threads = []
-	for i in range(4):
-		threads[i] = Thread(target = propogateThread, args = (user, hostChunks[i], chunkStorageList,))
+	for i in range(num_threads):
+		threads[i] = threading.Thread(target = propogateThread, args = (user, hosts_split[i], chunkStorageList,))
 	
 	for thread in threads:
-    	thread.start()
+		thread.start()
 
 	for thread in threads:
-    	thread.join()
+		thread.join()
 
 def propogateThread(user, hostsList, chunkStorageList):
 	for ip in hostsList:
 		otherServers[ip].addHost(user, chunkStorageList)
-
 
 def getPrivateIP():
 	global myPrivateIP
