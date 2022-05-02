@@ -302,9 +302,10 @@ def propagate(user, chunkStorageList):
 	print("sending update to other server nodes")
 	num_threads = 4
 	hosts_split = split_list_evenly(hosts, num_threads)
+	print('hosts_split:', hosts_split)
 	threads = []
 	for i in range(num_threads):
-		threads[i] = threading.Thread(target = propogateThread, args = (user, hosts_split[i], chunkStorageList,))
+		threads.append(threading.Thread(target = propogateThread, args = (user, hosts_split[i], chunkStorageList,)))
 	
 	for thread in threads:
 		thread.start()
