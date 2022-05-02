@@ -12,8 +12,10 @@ HOSTS="35.172.235.46 44.199.229.51 3.22.185.101
  13.48.3.201 15.185.175.128 157.175.185.52 15.228.252.96 15.229.0.10"
 
 IDX=0
-for HOSTNAME in ${HOSTS} ; do
-    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 server.py 8061 &" &
+for HOSTNAME in ${HOSTS} ; do 
+    scp -i ~/.ssh/$USER-keypair ~/project-4---final-project-zane-danny-ahmed/server.py $USER@${HOSTNAME}:~/project-4---final-project-zane-danny-ahmed/server.py
+    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && python3 server.py 8061 &" &
+    # ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 server.py 8061 &" &
     echo "server ${IDX} started"
     let IDX=${IDX}+1
 done
