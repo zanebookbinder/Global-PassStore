@@ -74,7 +74,7 @@ def register(username, key, val):
 	if username != user:
 		return 'no permissions to register password for this user'
 
-	chunks = splitPassword(val, 4)
+	chunks = split_evenly(val, 4)
 	chunkStorageList = []
 
 	# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
@@ -123,28 +123,20 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 		chunkStorageList.append([randomHost, count])
 		count+=1
 
-def splitPassword(password, n):
-	output = []
+def split_evenly(a, n):
+	"""
+	Splits a list or string evenly into n chunks. 
+	Returns a list of those chunks.
+	"""
+	n = min(n, len(a))
+	q, r = divmod(len(a), n)
 
-	size = math.floor(len(password)/n)
-	start = 0
-	end = size
-
-	count = 0
-
-	for start in range(0, len(password), size):
-		if count == n-1:
-			output.append(password[start:])
-			break
-		else:
-			output.append(password[start:start+size])
-		count+=1
-
-	return output
-
-def split_list_evenly(l, n):
-	k, m = divmod(len(l), n)
-	return list(l[i*k + min(i, m):(i + 1) * k + min(i+1, m)] for i in range(n))
+	chunks = []
+	for i in range(n):
+		start = i*q + min(i, r)
+		end = (i+1)*q + min(i+1, r)
+		chunks.append(a[start:end])
+	return chunks
 
 # put a (user + site), (password) pair into memory
 def put(key, val):
@@ -258,7 +250,7 @@ def propagate(user, chunkStorageList):
 
 	print("sending update to other server nodes")
 	num_threads = 4
-	hosts_split = split_list_evenly(hosts, num_threads)
+	hosts_split = split_evenly(hosts, num_threads)
 	print('hosts_split:', hosts_split)
 	threads = []
 	for i in range(num_threads):
