@@ -11,9 +11,10 @@ HOSTS="35.172.235.46 44.199.229.51 3.22.185.101
  15.160.192.179 15.160.153.56 35.180.109.137 35.180.39.12 13.48.137.111 
  13.48.3.201 15.185.175.128 157.175.185.52 15.228.252.96 15.229.0.10"
 
-KEYPAIR_PATH=$1
-
+IDX=0
 for HOSTNAME in ${HOSTS} ; do
-    ssh -i ${KEYPAIR_PATH}/$USER-keypair $USER@${HOSTNAME} "pkill -u $USER -f '^python3 server.py 8012$'"
-echo "Done killing servers"
+    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "pkill -u $USER -f '^python3 server.py 8012$'"
+    echo "server ${IDX} killed"
+    let IDX=${IDX}+1
 done
+echo

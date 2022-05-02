@@ -11,11 +11,11 @@ HOSTS="35.172.235.46 44.199.229.51 3.22.185.101
  15.160.192.179 15.160.153.56 35.180.109.137 35.180.39.12 13.48.137.111 
  13.48.3.201 15.185.175.128 157.175.185.52 15.228.252.96 15.229.0.10"
 
-
-KEYPAIR_PATH=$1
-
+IDX=0
 for HOSTNAME in ${HOSTS} ; do
     # scp [options] [source]:file [dest]:file
-    # scp -i ${KEYPAIR_PATH}/$USER-keypair ${KEYPAIR_PATH}/$USER-keypair $USER@${HOSTNAME}:${KEYPAIR_PATH}/$USER-keypair 
-    ssh -i ${KEYPAIR_PATH}/$USER-keypair $USER@${HOSTNAME} -o BatchMode=yes -o StrictHostKeyChecking=no "rm -rf project-4---final-project-zane-danny-ahmed && echo 'Host github.com' > .ssh/config && echo '    IdentityFile ~/.ssh/$USER-keypair' >> .ssh/config && echo '    StrictHostKeyChecking no' >> .ssh/config && chmod 600 .ssh/config && git clone git@github.com:bowdoin-dsys/project-4---final-project-zane-danny-ahmed.git"
+    # scp -i ~/.ssh/$USER/$USER-keypair ~/.ssh/$USER/$USER-keypair $USER@${HOSTNAME}:~/.ssh/$USER/$USER-keypair 
+    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} -o BatchMode=yes -o StrictHostKeyChecking=no "rm -rf project-4---final-project-zane-danny-ahmed && echo 'Host github.com' > .ssh/config && echo '    IdentityFile ~/.ssh/$USER-keypair' >> .ssh/config && echo '    StrictHostKeyChecking no' >> .ssh/config && chmod 600 .ssh/config && git clone git@github.com:bowdoin-dsys/project-4---final-project-zane-danny-ahmed.git"
+    echo "Repo cloned on server ${IDX}"
+    let IDX=${IDX}+1
 done

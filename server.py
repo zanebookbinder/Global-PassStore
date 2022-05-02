@@ -49,6 +49,8 @@ localPasswordData = {}
 userPasswordMap = {}
 otherServers = {}
 
+myPrivateIP = myPublicIP = ""
+
 
 def register(username, key, val):
 	"""
@@ -250,6 +252,7 @@ def propagate(user, chunkStorageList):
 
 
 def getPrivateIP():
+	global myPrivateIP
 	myPrivateIP = '0.0.0.0'
 	res = os.popen('/sbin/ifconfig | grep inet | head -n 1').readline()
 	splitIP = res.split(' ')
@@ -267,6 +270,9 @@ def getPrivateIP():
 
 
 def main():
+	global myPrivateIP
+	global myPublicIP
+
 	try:
 		sys.stdout = open('outputServer.log', 'w') # print statements go to this file
 		sys.stdout.reconfigure(line_buffering=True)
@@ -274,9 +280,6 @@ def main():
 		t = time.localtime()
 		current_time = time.strftime("%H:%M:%S", t)
 		print("Running at:", current_time)
-		
-
-
 
 		myPublicIP = os.popen('curl -s ifconfig.me').readline()
 		myPrivateIP = getPrivateIP()
