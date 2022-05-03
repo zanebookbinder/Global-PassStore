@@ -4,7 +4,7 @@ import sys
 # Should we have the user connect to one machine?
 # Should we add something telling the user where their password is stored?
 myServer = '35.172.235.46'
-ipString = 'http://' + myServer + ':8012/'
+ipString = 'http://' + myServer + ':8061/'
 connection = xmlrpc.client.ServerProxy(ipString)
 
 def main():
@@ -30,6 +30,10 @@ def main():
 
 def register(user, url, password):
 	userUrl = user + ' ' + url
+	print(connection)
+	print(user)
+	print(url)
+	print(password)
 	storedLocations = connection.register(user, userUrl, password)
 	if type(storedLocations) == list:
 		return "Success! Your password is stored in these places: " + str(storedLocations)
