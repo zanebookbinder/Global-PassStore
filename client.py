@@ -19,21 +19,19 @@ def main():
 		command = parse[0]
 		url = parse[1]
 		if command == 'register':
+			print("One second while we register your password around the globe...")
 			password = parse[2]
 			register(user, url, password)
 		if command == 'search':
-			search(user, url)
+			print(search(user, url))
 		if command == 'update':
+			print("one second while we update your password...")
 			password = parse[2]
 			update(user, url, password)
 
 
 def register(user, url, password):
 	userUrl = user + ' ' + url
-	print(connection)
-	print(user)
-	print(url)
-	print(password)
 	storedLocations = connection.register(user, userUrl, password)
 	if type(storedLocations) == list:
 		return "Success! Your password is stored in these places: " + str(storedLocations)
