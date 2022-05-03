@@ -7,6 +7,7 @@ TODO:
 	2. Make a better scheme for replicating (cluster-based)
 	3. Add username security (don't allow user to access someone else's data)
 	4. Remove all constants so serverCount is the only thing that knows how many servers we have
+	5. MAKE SURE THAT ORIGINAL STORAGE SERVERS ARE REMOVED FROM LIST DURING REPLICATION
 """
 
 import os
@@ -89,6 +90,9 @@ def register(username, key, val):
 	user = key.split(' ')[0]
 	if username != user:
 		return 'no permissions to register password for this user'
+
+	if search(username, key) != 'No record of key':
+		delete(username, key)
 
 	chunks = split_evenly(val, 4)
 	chunkStorageList = []
@@ -305,6 +309,49 @@ def getPrivateIP():
 
 	return myPrivateIP
 
+def removePiece(key, val):
+	if key not in localPasswordData:
+		return -1
+
+	del localPasswordData[key]
+	return 1
+
+def delete(username, key):
+	print("starting delete...")
+
+	user = key.split(' ')[0]
+
+	if username != user:
+		return 'no permissions to delete this password'
+
+	if key not in userPasswordMap:
+		return 'No record of key'
+
+	print(f"getting all of the password pieces for the account: {key}")
+	pieceNumToHost = userPasswordMap[key] # {1: [35.4523.42, 12.45.66], 2: [456.5434, 45.682.3943], 3: [35.4523.42, 12.45.66], 4: [456.5434, 45.682.3943]}
+	pieces = ['' for i in range(len(pieceNumToHost.keys()))]
+
+	# iterating through every password piece number and server host that is in charge of that
+	# password piece
+	for pieceNum, hostAddrs in pieceNumToHost.items():
+		hostAddr = 0
+		
+		while hostAddr < len(hostAddrs):
+		
+			if hostAddrs[hostAddr] == myPublicIP:
+				print("password piece found locally")
+				removePiece(username, key + str(pieceNum))
+			# password exists on other server machines
+			else:
+				# find piece on other machine with RPC
+				print("looking up password piece on other server host")
+				connection = otherServers[hostAddrs[hostAddr]]
+				removeResult = connection.removePiece(username, key + str(pieceNum))
+
+			hostAddr += 1
+
+	return "Successful deletion!"
+
 
 def main():
 	global myPrivateIP
@@ -350,6 +397,7 @@ def main():
 			server.register_function(propagate)
 			server.register_function(lookup)
 			server.register_function(split_evenly)
+			server.register_function(removePiece)
 			
 			print('about to serve forever')
 			server.serve_forever()

@@ -16,24 +16,35 @@ def main():
 
 	while(True):
 		parse = input("Enter your command: ").split(' ')
+		if len(parse) < 2:
+			print("Must include correct arguments starting with 'register', 'search', or 'update\'")
+			continue
 		command = parse[0]
 		url = parse[1]
-		if command == 'register':
+		if command == 'search':
+			print('Password for ' + url + ' is: ' + search(user, url) + '\n')
+		elif command == 'register':
+			if len(parse) < 3:
+				print("Must include three arguments for a register operation")
+
 			print("One second while we register your password around the globe...")
 			password = parse[2]
-			register(user, url, password)
-		if command == 'search':
-			print(search(user, url))
-		if command == 'update':
-			print("one second while we update your password...")
+			result = register(user, url, password)
+			print(result)
+		elif command == 'update':
+			if len(parse) < 3:
+				print("Must include three arguments for a register operation")
+			print("One second while we update your password...")
 			password = parse[2]
-			update(user, url, password)
+			result = update(user, url, password)
+			print(result)
 
 
 def register(user, url, password):
 	userUrl = user + ' ' + url
 	storedLocations = connection.register(user, userUrl, password)
 	if type(storedLocations) == list:
+		storedLocations = list(set(storedLocations))
 		return "Success! Your password is stored in these places: " + str(storedLocations)
 	return "Failure! " + storedLocations
 
@@ -44,7 +55,8 @@ def search(user, url):
 
 def update(user, url, password):
 	result = search(user, url)
-	if result == 'no permissions to search for this password' or result == 'No record of key':
+	print("Old password was " + result)
+	if result == 'No permissions to search for this password' or result == 'No record of key':
 		return result
 
 	return register(user, url, password)
