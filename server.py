@@ -363,8 +363,6 @@ def delete(username, key):
 				connection = otherServers[hostAddr]
 				removeResult = connection.removePiece(key + str(pieceNum))
 
-			hostAddr += 1
-
 	return "Successful deletion!"
 
 
