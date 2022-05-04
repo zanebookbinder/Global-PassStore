@@ -346,8 +346,10 @@ def delete(username, key):
 
 	# iterating through every password piece number and server host that is in charge of that
 	# password piece
-	for pieceNum, hostAddrs in pieceNumToHost.items():		
+	for pieceNum, hostAddrs in pieceNumToHost.items():
 		for hostAddr in hostAddrs:
+			print('deleting piece ' + str(pieceNum) + ' from host ' + str(hostAddr))
+					
 			if hostAddr == myPublicIP:
 				print("password piece found locally")
 				removePiece(key + str(pieceNum))
