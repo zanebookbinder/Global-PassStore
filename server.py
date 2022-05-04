@@ -8,6 +8,9 @@ TODO:
 	3. Add username security (don't allow user to access someone else's data)
 	4. Remove all constants so serverCount is the only thing that knows how many servers we have
 	5. MAKE SURE THAT ORIGINAL STORAGE SERVERS ARE REMOVED FROM LIST DURING REPLICATION
+	6. For deleting a password: add argument to propogate the determines delete/add
+			-if add, call AddHosts method
+			-if delete, call a new DeleteHosts method
 """
 
 import os
