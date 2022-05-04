@@ -323,10 +323,13 @@ def getPrivateIP():
 	return myPrivateIP
 
 def removePiece(key):
+	print("in remove piece with key: " + str(key))
 	if key not in localPasswordData:
+		print("returning -1")
 		return -1
 
 	del localPasswordData[key]
+	print("returning 1")
 	return 1
 
 def delete(username, key):
