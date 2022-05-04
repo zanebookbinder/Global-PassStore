@@ -398,6 +398,7 @@ def main():
 			server.register_function(lookup)
 			server.register_function(split_evenly)
 			server.register_function(removePiece)
+			server.register_function(delete)
 			
 			print('about to serve forever')
 			server.serve_forever()
