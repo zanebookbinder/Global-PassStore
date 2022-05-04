@@ -4,7 +4,7 @@ import sys
 # Should we have the user connect to one machine?
 # Should we add something telling the user where their password is stored?
 myServer = '35.172.235.46'
-ipString = 'http://' + myServer + ':8061/'
+ipString = 'http://' + myServer + ':8065/'
 connection = xmlrpc.client.ServerProxy(ipString)
 
 def main():

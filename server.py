@@ -322,7 +322,7 @@ def getPrivateIP():
 
 	return myPrivateIP
 
-def removePiece(key, val):
+def removePiece(key):
 	if key not in localPasswordData:
 		return -1
 
@@ -346,19 +346,16 @@ def delete(username, key):
 
 	# iterating through every password piece number and server host that is in charge of that
 	# password piece
-	for pieceNum, hostAddrs in pieceNumToHost.items():
-		hostAddr = 0
-		
-		while hostAddr < len(hostAddrs):
-		
-			if hostAddrs[hostAddr] == myPublicIP:
+	for pieceNum, hostAddrs in pieceNumToHost.items():		
+		for hostAddr in hostAddrs:
+			if hostAddr == myPublicIP:
 				print("password piece found locally")
-				removePiece(username, key + str(pieceNum))
+				removePiece(key + str(pieceNum))
 			# password exists on other server machines
 			else:
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
-				connection = otherServers[hostAddrs[hostAddr]]
+				connection = otherServers[hostAddr]
 				removeResult = connection.removePiece(username, key + str(pieceNum))
 
 			hostAddr += 1
