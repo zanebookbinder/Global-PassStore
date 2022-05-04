@@ -126,7 +126,17 @@ def register(username, key, val):
 	print("password has been distributed twice. register job complete!")
 	return storedLocations
 
+
 def shiftList(shuffledServerAddrs):
+	""" Shifts the input list over by 1 to the left so that the first element is on the end. 
+	* used as a helper function in register()
+
+	@params:
+		shuffledServerAddrs (list) - List of server IP addresses to be shuffled
+
+	@return:
+		list - The list of shuffled server IP addresses
+	"""
 	first = shuffledServerAddrs[0]
 	shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
 	return shuffledServerAddrs
