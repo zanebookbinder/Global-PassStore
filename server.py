@@ -340,7 +340,7 @@ def delete(username, key):
 	if key not in userPasswordMap:
 		return 'No record of key'
 
-	print(f"getting all of the password pieces for the account: {key}")
+	print("getting all of the password pieces for the account: " + str(key))
 	pieceNumToHost = userPasswordMap[key] # {1: [35.4523.42, 12.45.66], 2: [456.5434, 45.682.3943], 3: [35.4523.42, 12.45.66], 4: [456.5434, 45.682.3943]}
 	pieces = ['' for i in range(len(pieceNumToHost.keys()))]
 
@@ -349,16 +349,16 @@ def delete(username, key):
 	for pieceNum, hostAddrs in pieceNumToHost.items():
 		for hostAddr in hostAddrs:
 			print('deleting piece ' + str(pieceNum) + ' from host ' + str(hostAddr))
-					
+
 			if hostAddr == myPublicIP:
 				print("password piece found locally")
 				removePiece(key + str(pieceNum))
 			# password exists on other server machines
 			else:
 				# find piece on other machine with RPC
-				print("looking up password piece on other server host")
+				print("password piece found remotely")
 				connection = otherServers[hostAddr]
-				removeResult = connection.removePiece(username, key + str(pieceNum))
+				removeResult = connection.removePiece(key + str(pieceNum))
 
 			hostAddr += 1
 
