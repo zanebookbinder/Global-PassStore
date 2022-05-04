@@ -12,7 +12,7 @@ def main():
 	user = input("Please enter your username to login: ")
 
 	print("Thanks for logging in! Your username is " + user)
-	print("Executable commands:\n ->register [url] [password]\n ->search [url]\n ->update [url] [password]\n")
+	print("Executable commands:\n  ->register [url] [password]\n  ->search [url]\n  ->update [url] [password]\n  ->delete [url]\n")
 
 	while(True):
 		parse = input("Enter your command: ").split(' ')
@@ -23,6 +23,8 @@ def main():
 		url = parse[1]
 		if command == 'search':
 			print('Password for ' + url + ' is: ' + search(user, url) + '\n')
+		elif command == 'delete':
+			delete(user, url)
 		elif command == 'register':
 			if len(parse) < 3:
 				print("Must include three arguments for a register operation")
@@ -61,6 +63,9 @@ def update(user, url, password):
 
 	return register(user, url, password)
 
+def delete(user, url):
+	userUrl = user + ' ' + url
+	connection.delete(user, userUrl)
 
 if __name__ == "__main__":
 	main()
