@@ -363,8 +363,40 @@ def delete(username, key):
 				connection = otherServers[hostAddr]
 				removeResult = connection.removePiece(key + str(pieceNum))
 
+	deletePropogation(username, key)
+
 	return "Successful deletion!"
 
+def deletePasswordData(key):
+	if key not in userPasswordMap:
+		return -1
+
+	del userPasswordMap[key]
+	return 1
+
+def deletePropogation(user, key):
+	print("deleting " + str(key) + "from all user-password maps")
+	deletePasswordData(key)
+
+	print("sending deletion update to other server nodes")
+	num_threads = 4
+	hosts_split = split_evenly(hosts, num_threads)
+	print('hosts_split:', hosts_split)
+	threads = []
+	for i in range(num_threads):
+		threads.append(threading.Thread(target = propogateDeletionThread, args = (key, hosts_split[i],)))
+	
+	for thread in threads:
+		print('starting new thread')
+		thread.start()
+
+	for thread in threads:
+		thread.join()
+
+def propogateDeletionThread(key, hostsList):
+	print('propogating to new hostsList')
+	for ip in hostsList:
+		otherServers[ip].deletePasswordData(key)
 
 def main():
 	global myPrivateIP
@@ -412,6 +444,7 @@ def main():
 			server.register_function(split_evenly)
 			server.register_function(removePiece)
 			server.register_function(delete)
+			server.register_function(deletePasswordData)
 			
 			print('about to serve forever')
 			server.serve_forever()
