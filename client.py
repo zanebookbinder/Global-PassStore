@@ -1,13 +1,20 @@
 import xmlrpc.client
 import sys
+import time
 
 # Should we have the user connect to one machine?
 # Should we add something telling the user where their password is stored?
-myServer = '35.172.235.46'
-ipString = 'http://' + myServer + ':8065/'
-connection = xmlrpc.client.ServerProxy(ipString)
+# eventually move towards a smart client that knows which server is the best one to connect to
+
+connection = None
 
 def main():
+	global connection
+
+	# myServer = intelligently_pick_server(clusters)
+	myServer = '35.172.235.46'
+	serverIP = url_from_ip(myServer)
+	connection = xmlrpc.client.ServerProxy(serverIP)
 	print("~ Welcome to the PassStore.com: The most secure and reliable password storage system! ~\n")
 	user = input("Please enter your username to login: ")
 
@@ -70,6 +77,17 @@ def update(user, url, password):
 def delete(user, url):
 	userUrl = user + ' ' + url
 	return connection.delete(user, userUrl)
+
+def url_from_ip(ip):
+	""" Makes a full URL out of an IP address.
+	"""
+	return 'http://' + ip + ':8061/'
+
+def time_server(ip):
+	connection = xmlrpc.client.ServerProxy(ip)
+	start = time.perf_counter()
+	connection.ping()
+	stop = time.perf_counter()
 
 if __name__ == "__main__":
 	main()

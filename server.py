@@ -35,6 +35,11 @@ hosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.
 '15.160.153.56', '35.180.109.137', '35.180.39.12', '13.48.137.111', '13.48.3.201', '15.185.175.128', 
 '157.175.185.52', '15.228.252.96', '15.229.0.10']
 
+ids = {}
+
+for i, host in enumerate(hosts):
+	ids[host] = i
+
 americasHosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105',
 '54.177.19.64', '34.222.143.244', '54.202.50.11', '3.99.158.136', '3.98.96.39', '15.228.252.96',
 '15.229.0.10']
@@ -45,6 +50,11 @@ worldHosts = ['13.245.182.179', '13.246.6.180','18.166.176.112', '16.162.137.92'
 '54.95.115.193', '3.122.191.72', '3.73.75.196','34.244.200.204', '3.250.224.218', '18.130.129.70',
 '13.40.95.197', '15.160.192.179', '15.160.153.56','35.180.109.137', '35.180.39.12', '13.48.137.111',
 '13.48.3.201', '15.185.175.128', '157.175.185.52']
+
+hostClusterMap = {
+	'americas': americasHosts,
+	'rest-of-world': worldHosts
+}
 
 hostCountryMap = {'35.172.235.46': 'Virginia', '44.199.229.51': 'Virginia',
 '3.22.185.101': 'Ohio','18.191.134.62': 'Ohio','13.57.194.105': 'California',
@@ -62,6 +72,7 @@ hostCountryMap = {'35.172.235.46': 'Virginia', '44.199.229.51': 'Virginia',
 '13.48.137.111': 'Stockholm','13.48.3.201': 'Stockholm','15.185.175.128': 'Bahrain',
 '157.175.185.52': 'Bahrain','15.228.252.96': 'Sao Paulo','15.229.0.10': 'Sao Paulo'}
 
+
 hostChunks = []
 hostChunks.append(hosts[:10])
 hostChunks.append(hosts[10:20])
@@ -74,7 +85,12 @@ localPasswordData = {}
 userPasswordMap = {}
 otherServers = {}
 
-myPrivateIP = myPublicIP = ""
+myPrivateIP = myPublicIP = myCluster = ""
+
+def getCluster(ip):
+	for key, clusterList in hostClusterMap.items():
+		if ip in clusterList:
+			return key
 
 
 def register(username, key, val):
@@ -94,7 +110,9 @@ def register(username, key, val):
 	if username != user:
 		return 'no permissions to register password for this user'
 
+	# if new user tries to register but they already exists in our map, then delete that entry 
 	if search(username, key) != 'No record of key':
+		# maybe warn the user that they are about to overwrite a value?
 		delete(username, key)
 
 	chunks = split_evenly(val, 4)
@@ -125,7 +143,29 @@ def register(username, key, val):
 	chunkStorageList.append([myPublicIP, 4])
 
 	# propagate the updated list to all machines
-	propagate(key, chunkStorageList)
+	# propagate(key, chunkStorageList)
+
+	# propogate message out to nodes in my cluster
+	print(f"Propagating to other nodes in my cluster: {myCluster}")
+	otherHostsInCluster = hostClusterMap[myCluster].copy()
+	otherHostsInCluster.remove(myPublicIP)
+	propagate(key, chunkStorageList, otherHostsInCluster)
+	
+	# tell nodes in other clusters to propogate the message to their respective neighbor nodes
+	print("Local propagation complete. Now, telling one node in all other cluster to propagate to their cluster")
+	otherClusters = hostClusterMap.copy()
+	otherClusters.pop(myCluster)
+	for ipList in list(otherClusters.values()):
+		# pick one node randomly in each other cluster
+		randNodeIP = random.choice(ipList)
+		randNodeCluster = getCluster(randNodeIP)
+		randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
+		randNodeOtherHosts.remove(randNodeIP)
+		
+		# tell that random other node to propagate update to its own cluster
+		otherServers[randNodeIP].propogate(key, chunkStorageList, hosts=randNodeOtherHosts)
+		print(f"Just told node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
+	
 	print("password has been distributed twice. register job complete!")
 	return storedLocations
 
@@ -144,6 +184,7 @@ def shiftList(shuffledServerAddrs):
 	shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
 	return shuffledServerAddrs
 
+
 def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 	"""
 	store 
@@ -152,7 +193,7 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 	randomHosts = random.sample(shuffledServerAddrs, 3)
 	for randomHost in randomHosts:
 		connection = otherServers[randomHost]
-		print("current connection: ", randomHost)
+		print("current connection: id=", ids[randomHost])
 		connection.put(key+str(count), chunks[count-1])
 		chunkStorageList.append([randomHost, count])
 		storedLocations.append(hostCountryMap[randomHost])
@@ -160,6 +201,8 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
 
 	return storedLocations
 
+
+# LOCAL helper method 
 def split_evenly(a, n):
 	"""
 	Splits a list or string evenly into n chunks. 
@@ -175,10 +218,12 @@ def split_evenly(a, n):
 		chunks.append(a[start:end])
 	return chunks
 
+
 # put a (user + site), (password) pair into memory
 def put(key, val):
 	localPasswordData[key] = val
 	return 1
+
 
 # return a password if stored (given a user + site)
 def lookup(key):
@@ -186,6 +231,7 @@ def lookup(key):
 		return localPasswordData[key]
 
 	return -1
+
 
 # collect the pieces of a password given user + site
 def search(username, key):
@@ -234,14 +280,13 @@ def search(username, key):
 
 	return ''.join(pieces).strip()
 
-	finalPassword = ''
-	for i in range(1,3):
-		if i not in results:
-			return -1
-		finalPassword += results[i]
+	# finalPassword = ''
+	# for i in range(1,3):
+	# 	if i not in results:
+	# 		return -1
+	# 	finalPassword += results[i]
 
-	return finalPassword
-
+	# return finalPassword
 
 def getUserPasswordMap():
 	return str(userPasswordMap)
@@ -250,6 +295,8 @@ def getUserPasswordMap():
 def getLocalPasswordData():
 	return str(localPasswordData)
 
+
+# LOCAL method, no outgoing RPCs to other servers
 def addHosts(userSite, chunkStorageList):
 	"""
 	Update this node's userPasswordMap to include the new piece/server mappings.
@@ -277,7 +324,8 @@ def addHosts(userSite, chunkStorageList):
 
 
 # user = id + site, host = machine hostname, pieceNum = password piece number
-def propagate(user, chunkStorageList):
+# REMOTE method, makes outgoing RPC calls to other servers
+def propagate(user, chunkStorageList, hosts=hosts):
 	"""
 	Informs other hosts of updated password chunk mapping to servers
 	"""
@@ -300,10 +348,12 @@ def propagate(user, chunkStorageList):
 	for thread in threads:
 		thread.join()
 
+
 def propogateThread(user, hostsList, chunkStorageList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].addHosts(user, chunkStorageList)
+
 
 def getPrivateIP():
 	global myPrivateIP
@@ -331,6 +381,7 @@ def removePiece(key):
 	del localPasswordData[key]
 	print("returning 1")
 	return 1
+
 
 def delete(username, key):
 	print("starting delete...")
@@ -398,9 +449,28 @@ def propogateDeletionThread(key, hostsList):
 	for ip in hostsList:
 		otherServers[ip].deletePasswordData(key)
 
+### Client Connection Methods ###
+
+def ping():
+	""" Simple ping method to time RPCs in order to figure out which server would be 
+		best suited to serve a client
+	"""
+	return
+
+def updateMyCluster(myClusterName, message):
+	""" Given a message such as a new client registration, this method will update all the 
+	nodes in its cluster of that new registration.
+	
+	"""
+	
+	message()
+	return 0
+
+
 def main():
 	global myPrivateIP
 	global myPublicIP
+	global myCluster
 
 	try:
 		sys.stdout = open('outputServer.log', 'w') # print statements go to this file
@@ -412,6 +482,7 @@ def main():
 
 		myPublicIP = os.popen('curl -s ifconfig.me').readline()
 		myPrivateIP = getPrivateIP()
+		myCluster = getCluster(myPublicIP)
 
 		myPort = int(sys.argv[1])
 		serverCount = len(hosts)
@@ -445,6 +516,7 @@ def main():
 			server.register_function(removePiece)
 			server.register_function(delete)
 			server.register_function(deletePasswordData)
+			server.register_function(ping)
 			
 			print('about to serve forever')
 			server.serve_forever()
