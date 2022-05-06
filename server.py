@@ -3,14 +3,10 @@ Program Description: Distributed password manager server that stores and manages
 websites, and 
 
 TODO:
-	1. make location-based clusters
+	1. make local propogation happen at the same time as other-cluster propogation
 	2. Make a better scheme for replicating (cluster-based)
 	3. Add username security (don't allow user to access someone else's data)
 	4. Remove all constants so serverCount is the only thing that knows how many servers we have
-	5. MAKE SURE THAT ORIGINAL STORAGE SERVERS ARE REMOVED FROM LIST DURING REPLICATION
-	6. For deleting a password: add argument to propagate the determines delete/add
-			-if add, call AddHosts method
-			-if delete, call a new DeleteHosts method
 """
 
 import os
@@ -104,33 +100,25 @@ def register(username, key, val):
 	if username != user:
 		return 'no permissions to register password for this user'
 
-	# if new user tries to register but they already exists in our map, then delete that entry 
+	# if new user tries to register but it already exists in our map, they must use the update command 
 	if search(username, key) != 'No record of key':
-		# maybe warn the user that they are about to overwrite a value?
 		return "You already have a password for this site! Use the update command to override it."
-		# delete(username, key)
 
 	chunks = split_evenly(val, 4)
 	chunkStorageList = []
-
-	# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
-	# put(key + '1', chunks[0]) # store chunk1 on this machine
-	# chunkStorageList.append([myPublicIP, 1])
 	
-	# randomly shuffle which servers store which chunk numbers
+	# list of servers that chunks can be stored on
 	shuffledServerAddrs = list(otherServers.keys())
-	# random.shuffle(shuffledServerAddrs)
 
-	print("trying to split up rest of password amongst other hosts")
+	print("trying to split up password amongst other hosts")
 	# shuffling through the other server connections and splitting up the current password 
 	# amongst those servers, and propagating the update to each server as well
 	storedLocations, newShuffledServerAddrs = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks)
-	
 	# newShuffledServerAddrs stores the list of hosts that don't already have a piece of the passsword
 
 	print("redistributing password for replication")
 	replicationStoredLocations, newShuffledServerAddrs = storeChunks(newShuffledServerAddrs, key, chunkStorageList, chunks)
-	storedLocations.extend(replicationStoredLocations)
+	storedLocations.extend(replicationStoredLocations) # stored locations contains the places the password is stored
 
 	# propagate message out to nodes in my cluster
 	print(f"Propagating to other nodes in my cluster: {myCluster}")
@@ -266,10 +254,8 @@ def search(username, key):
 def getUserPasswordMap():
 	return str(userPasswordMap)
 
-
 def getLocalPasswordData():
 	return str(localPasswordData)
-
 
 # LOCAL method, no outgoing RPCs to other servers
 def addHosts(userSite, chunkStorageList):
@@ -296,7 +282,6 @@ def addHosts(userSite, chunkStorageList):
 		else:
 			# associate the password piece number with the server host node that it is sto
 			userPasswordMap[userSite] = {pieceNum: [hostAddr]}
-
 
 # user = id + site, host = machine hostname, pieceNum = password piece number
 # REMOTE method, makes outgoing RPC calls to other servers
@@ -328,7 +313,7 @@ def propagateThread(user, hostsList, chunkStorageList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].addHosts(user, chunkStorageList)
-
+		
 
 def getPrivateIP():
 	global myPrivateIP
