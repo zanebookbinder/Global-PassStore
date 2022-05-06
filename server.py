@@ -8,7 +8,7 @@ TODO:
 	3. Add username security (don't allow user to access someone else's data)
 	4. Remove all constants so serverCount is the only thing that knows how many servers we have
 	5. MAKE SURE THAT ORIGINAL STORAGE SERVERS ARE REMOVED FROM LIST DURING REPLICATION
-	6. For deleting a password: add argument to propogate the determines delete/add
+	6. For deleting a password: add argument to propagate the determines delete/add
 			-if add, call AddHosts method
 			-if delete, call a new DeleteHosts method
 """
@@ -139,13 +139,13 @@ def register(username, key, val):
 	# propagate the updated list to all machines
 	# propagate(key, chunkStorageList)
 
-	# propogate message out to nodes in my cluster
+	# propagate message out to nodes in my cluster
 	print(f"Propagating to other nodes in my cluster: {myCluster}")
 	otherHostsInCluster = hostClusterMap[myCluster].copy()
 	otherHostsInCluster.remove(myPublicIP)
 	propagate(key, chunkStorageList, otherHostsInCluster)
 	
-	# tell nodes in other clusters to propogate the message to their respective neighbor nodes
+	# tell nodes in other clusters to propagate the message to their respective neighbor nodes
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate to their cluster")
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
@@ -157,7 +157,7 @@ def register(username, key, val):
 		randNodeOtherHosts.remove(randNodeIP)
 		
 		# tell that random other node to propagate update to its own cluster
-		otherServers[randNodeIP].propogate(key, chunkStorageList, randNodeOtherHosts)
+		otherServers[randNodeIP].propagate(key, chunkStorageList, randNodeOtherHosts)
 		print(f"Just told node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
 	
 	print("password has been distributed twice. register job complete!")
@@ -333,7 +333,7 @@ def propagate(user, chunkStorageList, hosts=hosts):
 	print('hosts_split:', hosts_split)
 	threads = []
 	for i in range(num_threads):
-		threads.append(threading.Thread(target = propogateThread, args = (user, hosts_split[i], chunkStorageList,)))
+		threads.append(threading.Thread(target = propagateThread, args = (user, hosts_split[i], chunkStorageList,)))
 	
 	for thread in threads:
 		print('starting new thread')
@@ -343,7 +343,7 @@ def propagate(user, chunkStorageList, hosts=hosts):
 		thread.join()
 
 
-def propogateThread(user, hostsList, chunkStorageList):
+def propagateThread(user, hostsList, chunkStorageList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].addHosts(user, chunkStorageList)
@@ -429,7 +429,7 @@ def deletePropogation(user, key):
 	print('hosts_split:', hosts_split)
 	threads = []
 	for i in range(num_threads):
-		threads.append(threading.Thread(target = propogateDeletionThread, args = (key, hosts_split[i],)))
+		threads.append(threading.Thread(target = propagateDeletionThread, args = (key, hosts_split[i],)))
 	
 	for thread in threads:
 		print('starting new thread')
@@ -438,7 +438,7 @@ def deletePropogation(user, key):
 	for thread in threads:
 		thread.join()
 
-def propogateDeletionThread(key, hostsList):
+def propagateDeletionThread(key, hostsList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].deletePasswordData(key)
