@@ -8,6 +8,8 @@ from constants import hostClusterMap
 from constants import hostCountryMap
 import random
 
+# ALLOW CLIENT TO INPUT A FILENAME TO STORE PASSKEYS
+
 connection = None
 
 def main():
@@ -24,7 +26,7 @@ def main():
 	myServer, pingTime = intelligently_pick_server(clusterHosts)
 	print('You\'re connected to server ' + str(myServer) + ' located in ' + hostCountryMap[myServer] + ' with a ping of ' + str(round(pingTime, 3)) + ' seconds')
 
-	serverUrl = url_from_ip(myServer)
+	serverUrl = urlFromIp(myServer)
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
 	while(True):
@@ -95,7 +97,7 @@ def delete(user, url):
 	userUrl = user + ' ' + url
 	return connection.delete(user, userUrl)
 
-def url_from_ip(ip):
+def urlFromIp(ip):
 	""" Makes a full URL out of an IP address.
 	"""
 	return f'http://{ip}:{portno}/'
@@ -113,7 +115,7 @@ def intelligently_pick_server(myCluster):
 	curBestServer = myCluster[0]
 
 	for ip in random.sample(myCluster[1:], 10):
-		url = url_from_ip(ip)
+		url = urlFromIp(ip)
 		time = time_server(url)
 		if time < curBestTime:
 			curBestTime = time
