@@ -29,7 +29,8 @@ def main():
 		user = input("\nPlease enter your username to login: ")
 
 		print("Thanks for logging in! Your username is " + user)
-		print("Executable commands:\n  ->register/r [url] [password]\n  ->search/s   [url]\n  ->update/u   [url] [password]\n  ->delete/d   [url]\n  ->logout/l\n")
+		print("Executable commands:\n  ->register/r [url] [password]\n  ->search/s   [url]")
+		print("  ->update/u   [url] [password]\n  ->delete/d   [url]\n  ->logout/l\n  ->quit/q\n")
 
 		while(True):
 			parse = input("Enter your command: ").split(' ')
@@ -38,6 +39,8 @@ def main():
 			if len(parse) == 1 and (parse[0] == 'logout' or parse[0] == 'l'):
 				user = ""
 				break
+			if len(parse) == 1 and (parse[0] == 'quit' or parse[0] == 'q'):
+				exit(0)
 			if len(parse) < 2:
 				print("Must include correct arguments starting with 'register', 'search', or 'update\'")
 				continue

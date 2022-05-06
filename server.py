@@ -124,6 +124,11 @@ def register(username, key, val):
 	print(f"Propagating to other nodes in my cluster: {myCluster}")
 	otherHostsInCluster = hostClusterMap[myCluster].copy()
 	otherHostsInCluster.remove(myPublicIP)
+
+
+	threads = []
+	threads.append(threading.Thread(target = propagate, args = (key, chunkStorageList, otherHostsInCluster,)))
+
 	propagate(key, chunkStorageList, otherHostsInCluster)
 	
 	# tell nodes in other clusters to propagate the message to their respective neighbor nodes
@@ -138,8 +143,15 @@ def register(username, key, val):
 		randNodeOtherHosts.remove(randNodeIP)
 		
 		# tell that random other node to propagate update to its own cluster
-		otherServers[randNodeIP].propagate(key, chunkStorageList, randNodeOtherHosts)
+		threads.append(threading.Thread(target = otherServers[randNodeIP].propagate(key, chunkStorageList, randNodeOtherHosts,)))
 		print(f"Just told node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
+
+	for thread in threads:
+		print('starting new thread')
+		thead.start
+
+	for thread in threads:
+		thread.join()
 	
 	print("password has been distributed twice. register job complete!")
 	return storedLocations
