@@ -70,13 +70,16 @@ def main():
 				print(result)
 
 def register(user, url, password):
+	start = time.perf_counter()
+
 	if len(password) < 4:
 		return "Sorry! Passwords must be at least 4 characters long"
 	userUrl = user + ' ' + url
 	storedLocations = connection.register(user, userUrl, password)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
-		return "Success! Your password is stored in these places: " + str(storedLocations)
+		stop = time.perf_counter()
+		return "Success! Your password is stored in these places: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
 	return "Failure! " + storedLocations
 
 def search(user, url):

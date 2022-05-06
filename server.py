@@ -3,10 +3,10 @@ Program Description: Distributed password manager server that stores and manages
 websites, and 
 
 TODO:
-	1. make local propogation happen at the same time as other-cluster propogation
-	2. Make a better scheme for replicating (cluster-based)
-	3. Add username security (don't allow user to access someone else's data)
-	4. Remove all constants so serverCount is the only thing that knows how many servers we have
+	1. Make a better scheme for replicating (cluster-based) --> store first version on local cluster, replicas anywhere
+	2. Add username security (don't allow user to access someone else's data)
+	3. Remove all constants so serverCount is the only thing that knows how many servers we have
+	4. Make number of chunks customizable easily with global variable
 """
 
 import os
