@@ -16,7 +16,7 @@ import xmlrpc.client
 import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 from xmlrpc.server import SimpleXMLRPCServer
-from constants import hosts, portno
+from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
 import sys
 import math
 import random
@@ -313,7 +313,7 @@ def propagateThread(user, hostsList, chunkStorageList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].addHosts(user, chunkStorageList)
-		
+
 
 def getPrivateIP():
 	global myPrivateIP

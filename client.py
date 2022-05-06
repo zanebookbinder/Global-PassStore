@@ -1,11 +1,7 @@
 import xmlrpc.client
 import sys
 import time
-from constants import portno
-from constants import americasHosts
-from constants import worldHosts
-from constants import hostClusterMap
-from constants import hostCountryMap
+from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
 import random
 
 # ALLOW CLIENT TO INPUT A FILENAME TO STORE PASSKEYS
