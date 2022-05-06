@@ -113,28 +113,27 @@ def register(username, key, val):
 	chunkStorageList = []
 
 	# 'zbookbin amazon.com1', 'zbookbin amazon.com2', etc.
-	put(key + '1', chunks[0]) # store chunk1 on this machine
-
-	chunkStorageList.append([myPublicIP, 1])
+	# put(key + '1', chunks[0]) # store chunk1 on this machine
+	# chunkStorageList.append([myPublicIP, 1])
 	
 	# randomly shuffle which servers store which chunk numbers
 	shuffledServerAddrs = list(otherServers.keys())
-	random.shuffle(shuffledServerAddrs)
+	# random.shuffle(shuffledServerAddrs)
 
 	print("trying to split up rest of password amongst other hosts")
 	# shuffling through the other server connections and splitting up the current password 
 	# amongst those servers, and propagating the update to each server as well
-	storedLocations = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, 2)
-
-	# shift randomized list by 1 so no server stores the same chunk twice
-	shuffledServerAddrs = shiftList(shuffledServerAddrs)
+	storedLocations, newShuffledServerAddrs = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks)
+	
+	# newShuffledServerAddrs stores the list of hosts that don't already have a piece of the passsword
 
 	print("redistributing password for replication")
-	storedLocations.extend(storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, 1))
+	replicationStoredLocations, newShuffledServerAddrs = storeChunks(newShuffledServerAddrs, key, chunkStorageList, chunks)
+	storedLocations.extend(replicationStoredLocations)
 
-	put(key + '4', chunks[3]) # store last chunk on this machine
+	# put(key + '4', chunks[3]) # store last chunk on this machine
 	# why do we do this?
-	chunkStorageList.append([myPublicIP, 4])
+	# chunkStorageList.append([myPublicIP, 4])
 
 	# propagate the updated list to all machines
 	# propagate(key, chunkStorageList)
@@ -163,37 +162,25 @@ def register(username, key, val):
 	print("password has been distributed twice. register job complete!")
 	return storedLocations
 
-
-def shiftList(shuffledServerAddrs):
-	""" Shifts the input list over by 1 to the left so that the first element is on the end. 
-	* used as a helper function in register()
-
-	@params:
-		shuffledServerAddrs (list) - List of server IP addresses to be shuffled
-
-	@return:
-		list - The list of shuffled server IP addresses
-	"""
-	first = shuffledServerAddrs[0]
-	shuffledServerAddrs = shuffledServerAddrs[1:] + [first]
-	return shuffledServerAddrs
-
-
-def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks, count):
+def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 	"""
 	store 
 	"""
+	newShuffledServerAddrs = shuffledServerAddrs
 	storedLocations = []
-	randomHosts = random.sample(shuffledServerAddrs, 3)
+	randomHosts = random.sample(shuffledServerAddrs, 4)
+
+	chunkCount = 1
 	for randomHost in randomHosts:
 		connection = otherServers[randomHost]
 		print("current connection: id=", ids[randomHost])
-		connection.put(key+str(count), chunks[count-1])
-		chunkStorageList.append([randomHost, count])
+		connection.put(key+str(chunkCount), chunks[chunkCount-1])
+		chunkStorageList.append([randomHost, chunkCount])
 		storedLocations.append(hostCountryMap[randomHost])
-		count+=1
+		newShuffledServerAddrs.remove(randomHost)
+		chunkCount+=1
 
-	return storedLocations
+	return storedLocations, newShuffledServerAddrs
 
 
 # LOCAL helper method 
