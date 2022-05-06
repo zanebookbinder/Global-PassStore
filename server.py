@@ -148,7 +148,7 @@ def register(username, key, val):
 
 	for thread in threads:
 		print('starting new thread')
-		thread.start
+		thread.start()
 
 	for thread in threads:
 		thread.join()
