@@ -107,7 +107,8 @@ def register(username, key, val):
 	# if new user tries to register but they already exists in our map, then delete that entry 
 	if search(username, key) != 'No record of key':
 		# maybe warn the user that they are about to overwrite a value?
-		delete(username, key)
+		return "You already have a password for this site! Use the update command to override it."
+		# delete(username, key)
 
 	chunks = split_evenly(val, 4)
 	chunkStorageList = []
@@ -130,13 +131,6 @@ def register(username, key, val):
 	print("redistributing password for replication")
 	replicationStoredLocations, newShuffledServerAddrs = storeChunks(newShuffledServerAddrs, key, chunkStorageList, chunks)
 	storedLocations.extend(replicationStoredLocations)
-
-	# put(key + '4', chunks[3]) # store last chunk on this machine
-	# why do we do this?
-	# chunkStorageList.append([myPublicIP, 4])
-
-	# propagate the updated list to all machines
-	# propagate(key, chunkStorageList)
 
 	# propagate message out to nodes in my cluster
 	print(f"Propagating to other nodes in my cluster: {myCluster}")
