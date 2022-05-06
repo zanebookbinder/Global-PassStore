@@ -7,6 +7,7 @@ TODO:
 	2. Add username security (don't allow user to access someone else's data)
 	3. Remove all constants so serverCount is the only thing that knows how many servers we have
 	4. Make number of chunks customizable easily with global variable
+	5. Handle failures and joining
 """
 
 import os
