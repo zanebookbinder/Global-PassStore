@@ -143,12 +143,12 @@ def register(username, key, val):
 		randNodeOtherHosts.remove(randNodeIP)
 		
 		# tell that random other node to propagate update to its own cluster
-		threads.append(threading.Thread(target = otherServers[randNodeIP].propagate(key, chunkStorageList, randNodeOtherHosts,)))
+		threads.append(threading.Thread(target = otherServers[randNodeIP].propagate, args = (key, chunkStorageList, randNodeOtherHosts,)))
 		print(f"Just told node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
 
 	for thread in threads:
 		print('starting new thread')
-		thead.start
+		thread.start
 
 	for thread in threads:
 		thread.join()
