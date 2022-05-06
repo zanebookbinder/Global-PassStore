@@ -1,6 +1,7 @@
 import xmlrpc.client
 import sys
 import time
+from constants import portno
 
 # Should we have the user connect to one machine?
 # Should we add something telling the user where their password is stored?
@@ -81,7 +82,7 @@ def delete(user, url):
 def url_from_ip(ip):
 	""" Makes a full URL out of an IP address.
 	"""
-	return 'http://' + ip + ':8061/'
+	return f'http://{ip}:{portno}/'
 
 def time_server(ip):
 	connection = xmlrpc.client.ServerProxy(ip)
