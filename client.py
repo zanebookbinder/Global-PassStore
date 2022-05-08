@@ -72,10 +72,12 @@ def main():
 def register(user, url, password):
 	start = time.perf_counter()
 
-	if len(password) < 4:
-		return "Sorry! Passwords must be at least 4 characters long"
+	numChunks = 4
+
+	if len(password) > numChunks:
+		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
-	storedLocations = connection.register(user, userUrl, password)
+	storedLocations = connection.register(user, userUrl, password, numChunks)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()

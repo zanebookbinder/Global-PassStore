@@ -63,13 +63,6 @@ hostCountryMap = {'35.172.235.46': 'Virginia', '44.199.229.51': 'Virginia',
 '13.48.137.111': 'Stockholm','13.48.3.201': 'Stockholm','15.185.175.128': 'Bahrain',
 '157.175.185.52': 'Bahrain','15.228.252.96': 'Sao Paulo','15.229.0.10': 'Sao Paulo'}
 
-
-hostChunks = []
-hostChunks.append(hosts[:10])
-hostChunks.append(hosts[10:20])
-hostChunks.append(hosts[20:30])
-hostChunks.append(hosts[30:])
-
 otherHosts = hosts.copy()
 
 localPasswordData = {}
@@ -83,8 +76,7 @@ def getCluster(ip):
 		if ip in clusterList:
 			return key
 
-
-def register(username, key, val):
+def register(username, key, val, numChunks=4):
 	"""
 	registers a username, key, value across this and other
 	machines. Only called via RPC from client program.
@@ -97,6 +89,10 @@ def register(username, key, val):
 	print("Current username:", username)
 	print("Current key:", key)
 
+	if numChunks < len(val):
+		print("Too few chunks for this length password!")
+		return "Not enough chunks for this length password"
+
 	user = key.split(' ')[0]
 	if username != user:
 		return 'no permissions to register password for this user'
@@ -105,7 +101,7 @@ def register(username, key, val):
 	if search(username, key) != 'No record of key':
 		return "You already have a password for this site! Use the update command to override it."
 
-	chunks = split_evenly(val, 4)
+	chunks = split_evenly(val, numChunks)
 	chunkStorageList = []
 	
 	# list of servers that chunks can be stored on
@@ -157,9 +153,10 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 	"""
 	store 
 	"""
+	numChunks = len(chunks)
 	newShuffledServerAddrs = shuffledServerAddrs
 	storedLocations = []
-	randomHosts = random.sample(shuffledServerAddrs, 4)
+	randomHosts = random.sample(shuffledServerAddrs, numChunks)
 
 	chunkCount = 1
 	for randomHost in randomHosts:
@@ -312,12 +309,10 @@ def propagate(user, chunkStorageList, hosts=hosts):
 
 	runThreads(propagateOps)
 
-
 def propagateThread(user, hostsList, chunkStorageList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].addHosts(user, chunkStorageList)
-
 
 def getPrivateIP():
 	global myPrivateIP

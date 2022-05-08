@@ -1,44 +1,169 @@
 import xmlrpc.client
+import sys
+import time
+from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
+import random
 
-print("before client connection setup")
+letters = string.ascii_lowercase
 
-hosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105', 
-	'54.177.19.64', '34.222.143.244', '54.202.50.11', '13.245.182.179', '13.246.6.180', '18.166.176.112', 
-	'16.162.137.92', '108.136.118.131', '108.136.41.214', '13.233.255.217', '15.206.211.195', '15.152.35.76',
-	 '13.208.42.124', '13.125.213.112', '52.79.85.82', '18.136.203.66', '54.251.84.92', '3.104.66.60', 
-	 '3.26.227.87', '18.183.60.155', '54.95.115.193', '3.99.158.136', '3.98.96.39', '3.122.191.72', 
-	 '3.73.75.196', '34.244.200.204', '3.250.224.218', '18.130.129.70', '13.40.95.197', '15.160.192.179',
-	  '15.160.153.56', '35.180.109.137', '35.180.39.12', '13.48.137.111', '13.48.3.201', '15.185.175.128', 
-	  '157.175.185.52', '15.228.252.96', '15.229.0.10']
+serverUrl = 'http://3.98.96.39.8062'
+connection = xmlrpc.client.ServerProxy(serverUrl)
 
-connectionMap = {}
+print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-for ip in hosts:
-	ipString = 'http://' + ip + ':8012/'
-	connectionMap[ip] = xmlrpc.client.ServerProxy(ipString)
+threadCounts = [1, 5, 10, 20, 50]
 
-print("setting up client connection to rpc servers ")
+for t in threadCounts:
+	print("Testing with " + str(t) + " clients")
+	threads = []
+	for _ in range(t):
+		threads.append([testRegisterTime, 'zbookbin', 5])
+	
+	runThreads(threads)
 
-connectionMap['35.172.235.46'].register('zbookbin', 'zbookbin nike.com', 'hello1234')
-print("password 1 registered")
-connectionMap['15.229.0.10'].register('dlittle', 'dlittle amazon.com', 'uhoh789')
-print("password 2 registered")
 
-print("some local password data:")
-print(connectionMap['35.172.235.46'].getLocalPasswordData())
-print(connectionMap['15.229.0.10'].getLocalPasswordData())
-print(connectionMap['18.183.60.155'].getLocalPasswordData())
-print(connectionMap['15.160.192.179'].getLocalPasswordData())
-print("\n\nsome userPasswordMaps:")
-print('\n' + connectionMap['18.183.60.155'].getUserPasswordMap())
-print('\n' + connectionMap['15.160.153.56'].getUserPasswordMap())
-print('\n' + connectionMap['54.95.115.193'].getUserPasswordMap())
+print("Test 2: Node failures vs percentage of successful searches")
+# idk how we do this one
 
-print("searching for first password (hello1234)")
-print(connectionMap['54.95.115.193'].search('zbookbin', 'zbookbin nike.com'))
-print("searching for nonexistant password")
-print(connectionMap['13.246.6.180'].search('zbookbin', 'zbookbin amazon.com'))
+print("Test 3: Number of passwords stored in GPS vs. search time")
 
-# # Print list of available methods
-print(connectionMap['16.162.137.92'].system.listMethods())
-# storemap of user + site keys and password fragments
+passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
+urls = []
+
+for p in passwordCounts:
+	print("Testing search time with " + str(p) + ' passwords stored')
+	for _ in range(p):
+		url = ''.join(random.choice(letters) for i in range(15))
+		urls.append(url)
+		password = "hello12345"
+		register('zbookbin', url, password)
+
+	print(testSearchTime('zbookbin', 5, urls))
+
+print("Test 4: Password chunk count vs. registration time")
+
+chunkCounts = [2, 3, 4, 5]
+
+# register 5 passwords with either of these chunk Counts and find the average time
+# need to make split a parameter for server.register
+
+	
+# threads = []
+# for _ in range(50):
+# 	threads.append([testRegisterTime, 'zbookbin', ])
+
+# runThreads(threads)
+
+
+
+
+#register(user, url, password)
+#search (user, url)
+#update (user, url, password)
+#delete(ursr, url)
+
+def runThreads(routines):
+	""" Takes in a list of 'routines', which should be structured as a list
+	containing the thread entrypoint, followed by the arguments. E.g. [myFunc, 1, 2]
+	The threads are then run concurrently, and the function returns when all finish.
+	"""
+	threads = []
+	for routine in routines:
+		entry, *arguments = routine
+		threads.append(threading.Thread(target=entry,args=(arguments)))
+
+	for t in threads:
+		t.start()
+    
+	for t in threads:
+		t.join()
+
+def testRegisterTime(user, repetitions):
+	url = ''.join(random.choice(letters) for i in range(15))
+	password = "hello12345"
+
+	start = time.perf_counter()
+	for _ in range(repititions):
+		register(user, url, password)
+	stop = time.perf_counter()
+
+	return stop - start / repititions
+
+def testSearchTime(user, repetitions, urls):
+
+	start = time.perf_counter()
+	for _ in range(repititions):
+		url = random.choice(urls)
+		search(user, url)
+	stop = time.perf_counter()
+
+	return stop - start / repititions
+
+
+def register(user, url, password):
+	start = time.perf_counter()
+
+	if len(password) < 4:
+		return "Sorry! Passwords must be at least 4 characters long"
+	userUrl = user + ' ' + url
+	storedLocations = connection.register(user, userUrl, password)
+	if type(storedLocations) == list:
+		storedLocations = list(set(storedLocations))
+		stop = time.perf_counter()
+		return "Success! Your password is stored in these places: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
+	return "Failure! " + storedLocations
+
+def search(user, url):
+	userUrl = user + ' ' + url
+	result = connection.search(user, userUrl)
+	return result
+
+def update(user, url, password):
+	result = search(user, url)
+	print("Old password was " + result)
+	if result == 'No permissions to search for this password' or result == 'No record of key':
+		return result
+
+	return register(user, url, password)
+
+def delete(user, url):
+	userUrl = user + ' ' + url
+	return connection.delete(user, userUrl)
+
+def urlFromIp(ip):
+	""" Makes a full URL out of an IP address.
+	"""
+	return f'http://{ip}:{portno}/'
+
+def time_server(ip):
+	connection = xmlrpc.client.ServerProxy(ip)
+	start = time.perf_counter()
+	connection.ping()
+	stop = time.perf_counter()
+
+	return stop - start
+
+def intelligently_pick_server(myCluster):
+	curBestTime = 100
+	curBestServer = myCluster[0]
+
+	for ip in random.sample(myCluster[1:], 10):
+		url = urlFromIp(ip)
+		time = time_server(url)
+		if time < curBestTime:
+			curBestTime = time
+			curBestServer = ip
+
+	return curBestServer, curBestTime
+
+def selectCluster(region, hostClusterMap):
+	if region in ['Americas', 'A']:
+		return hostClusterMap['americas']
+	if region in ['World', 'W']:
+		return hostClusterMap['rest-of-world']
+	else:
+		print("Invalid cluster!")
+		return []
+
+if __name__ == "__main__":
+	main()
