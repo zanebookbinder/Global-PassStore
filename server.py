@@ -128,7 +128,8 @@ def register(username, key, val):
 
 
 	threads = []
-	threads.append(threading.Thread(target = propagate, args = (key, chunkStorageList, otherHostsInCluster,)))
+	# threads.append(threading.Thread(target = propagate, args = (key, chunkStorageList, otherHostsInCluster,)))
+	threads.append([propagate, key, chunkStorageList, otherHostsInCluster])
 
 	propagate(key, chunkStorageList, otherHostsInCluster)
 	
@@ -144,15 +145,10 @@ def register(username, key, val):
 		randNodeOtherHosts.remove(randNodeIP)
 		
 		# tell that random other node to propagate update to its own cluster
-		threads.append(threading.Thread(target = otherServers[randNodeIP].propagate, args = (key, chunkStorageList, randNodeOtherHosts,)))
-		print(f"Just told node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
+		threads.append([otherServers[randNodeIP].propagate, key, chunkStorageList, randNodeOtherHosts])
+		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
 
-	for thread in threads:
-		print('starting new thread')
-		thread.start()
-
-	for thread in threads:
-		thread.join()
+	runThreads(threads)
 	
 	print("password has been distributed twice. register job complete!")
 	return storedLocations
@@ -310,16 +306,11 @@ def propagate(user, chunkStorageList, hosts=hosts):
 	num_threads = 4
 	hosts_split = split_evenly(hosts, num_threads)
 	print('hosts_split:', hosts_split)
-	threads = []
+	propagateOps = []
 	for i in range(num_threads):
-		threads.append(threading.Thread(target = propagateThread, args = (user, hosts_split[i], chunkStorageList,)))
-	
-	for thread in threads:
-		print('starting new thread')
-		thread.start()
+		propagateOps.append([propagateThread, user, hosts_split[i], chunkStorageList])
 
-	for thread in threads:
-		thread.join()
+	runThreads(propagateOps)
 
 
 def propagateThread(user, hostsList, chunkStorageList):
@@ -406,21 +397,32 @@ def deletePropogation(user, key):
 	num_threads = 4
 	hosts_split = split_evenly(hosts, num_threads)
 	print('hosts_split:', hosts_split)
-	threads = []
+	deleteOps = []
 	for i in range(num_threads):
-		threads.append(threading.Thread(target = propagateDeletionThread, args = (key, hosts_split[i],)))
-	
-	for thread in threads:
-		print('starting new thread')
-		thread.start()
+		deleteOps.append([propagateDeletionThread, key, hosts_split[i]])
 
-	for thread in threads:
-		thread.join()
+	runThreads(deleteOps)
 
 def propagateDeletionThread(key, hostsList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		otherServers[ip].deletePasswordData(key)
+
+def runThreads(routines):
+	""" Takes in a list of 'routines', which should be structured as a list
+	containing the thread entrypoint, followed by the arguments. E.g. [myFunc, 1, 2]
+	The threads are then run concurrently, and the function returns when all finish.
+	"""
+	threads = []
+	for routine in routines:
+		entry, *arguments = routine
+		threads.append(threading.Thread(target=entry,args=(arguments)))
+
+	for t in threads:
+		t.start()
+    
+	for t in threads:
+		t.join()
 
 ### Client Connection Methods ###
 
