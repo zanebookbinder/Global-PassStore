@@ -89,7 +89,7 @@ def register(username, key, val, numChunks=4):
 	print("Current username:", username)
 	print("Current key:", key)
 
-	if numChunks < len(val):
+	if numChunks > len(val):
 		print("Too few chunks for this length password!")
 		return "Not enough chunks for this length password"
 

@@ -74,7 +74,7 @@ def register(user, url, password):
 
 	numChunks = 4
 
-	if len(password) > numChunks:
+	if len(password) < numChunks:
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
 	storedLocations = connection.register(user, userUrl, password, numChunks)
