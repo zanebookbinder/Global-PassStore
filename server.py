@@ -8,6 +8,8 @@ TODO:
 	3. Remove all constants so serverCount is the only thing that knows how many servers we have
 	4. Make number of chunks customizable easily with global variable
 	5. Handle failures and joining
+
+	6. Make update/register synchronized on one key
 """
 
 import os
@@ -174,8 +176,9 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 # LOCAL helper method 
 def split_evenly(a, n):
 	"""
-	Splits a list or string evenly into n chunks. 
-	Returns a list of those chunks.
+	Splits a list or string evenly (if possible) into n chunks. 
+	Returns a list of those chunks. If given a list/string with length
+	smaller than n, the returned list will be of length len(a).
 	"""
 	n = min(n, len(a))
 	q, r = divmod(len(a), n)
@@ -462,7 +465,8 @@ def main():
 
 		otherHosts.remove(myPublicIP)
 
-		time.sleep(3) # I think we should make this longer since it'll only happen on startup
+		# curious if this works without the call to sleep()
+		# time.sleep(3) # I think we should make this longer since it'll only happen on startup
 
 		for IPaddr in hosts:
 			if IPaddr != myPublicIP:
