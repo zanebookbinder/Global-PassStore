@@ -91,9 +91,13 @@ def search(user, url):
 
 def update(user, url, password):
 	result = search(user, url)
+	if result == 'No record of key':
+		return 'No record of key. Can\'t update this password'
 	print("Old password was " + result)
 	if result == 'No permissions to search for this password' or result == 'No record of key':
 		return result
+
+	delete(user, url)
 
 	return register(user, url, password)
 

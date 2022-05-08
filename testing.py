@@ -3,46 +3,58 @@ import sys
 import time
 from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
 import random
+import string
+import threading
 
+connection = None
 letters = string.ascii_lowercase
 
-serverUrl = 'http://3.98.96.39.8062'
-connection = xmlrpc.client.ServerProxy(serverUrl)
+def main():
+	global connection
 
-print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
+	serverUrl = 'http://3.98.96.39:8062/'
+	connection = xmlrpc.client.ServerProxy(serverUrl)
+	print(connection)
 
-threadCounts = [1, 5, 10, 20, 50]
+	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-for t in threadCounts:
-	print("Testing with " + str(t) + " clients")
-	threads = []
-	for _ in range(t):
-		threads.append([testRegisterTime, 'zbookbin', 5])
-	
-	runThreads(threads)
+	threadCounts = [1, 5, 10, 20, 50]
+
+	for t in threadCounts:
+		print("Testing with " + str(t) + " clients")
+		threads = []
+		for _ in range(t):
+			threads.append([testRegisterTime, 'zbookbin', 5])
+		
+		runThreads(threads)
 
 
-print("Test 2: Node failures vs percentage of successful searches")
-# idk how we do this one
+	print("Test 2: Node failures vs percentage of successful searches")
+	# idk how we do this one
 
-print("Test 3: Number of passwords stored in GPS vs. search time")
+	print("Test 3: Number of passwords stored in GPS vs. search time")
 
-passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
-urls = []
+	passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
+	urls = []
 
-for p in passwordCounts:
-	print("Testing search time with " + str(p) + ' passwords stored')
-	for _ in range(p):
-		url = ''.join(random.choice(letters) for i in range(15))
-		urls.append(url)
-		password = "hello12345"
-		register('zbookbin', url, password)
+	for p in passwordCounts:
+		print("Testing search time with " + str(p) + ' passwords stored')
+		for _ in range(p):
+			url = ''.join(random.choice(letters) for i in range(15))
+			urls.append(url)
+			password = "hello12345"
+			register('zbookbin', url, password)
 
-	print(testSearchTime('zbookbin', 5, urls))
+		print(testSearchTime('zbookbin', 5, urls))
 
-print("Test 4: Password chunk count vs. registration time")
+	print("Test 4: Password chunk count vs. registration time")
 
-chunkCounts = [2, 3, 4, 5]
+	chunkCounts = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+	for c in chunkCounts:
+		print("testing average registration time with " + str(c) + " chunks")
+		print(testRegisterTime('zbookbin', 5, c))
+
 
 # register 5 passwords with either of these chunk Counts and find the average time
 # need to make split a parameter for server.register
@@ -78,35 +90,35 @@ def runThreads(routines):
 	for t in threads:
 		t.join()
 
-def testRegisterTime(user, repetitions):
+def testRegisterTime(user, repetitions, numChunks=4):
 	url = ''.join(random.choice(letters) for i in range(15))
 	password = "hello12345"
 
 	start = time.perf_counter()
-	for _ in range(repititions):
-		register(user, url, password)
+	for _ in range(repetitions):
+		register(user, url, password, numChunks)
 	stop = time.perf_counter()
 
-	return stop - start / repititions
+	return stop - start / repetitions
 
 def testSearchTime(user, repetitions, urls):
 
 	start = time.perf_counter()
-	for _ in range(repititions):
+	for _ in range(repetitions):
 		url = random.choice(urls)
 		search(user, url)
 	stop = time.perf_counter()
 
-	return stop - start / repititions
+	return stop - start / repetitions
 
 
-def register(user, url, password):
+def register(user, url, password, numChunks=4):
 	start = time.perf_counter()
 
-	if len(password) < 4:
-		return "Sorry! Passwords must be at least 4 characters long"
+	if len(password) < numChunks:
+		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
-	storedLocations = connection.register(user, userUrl, password)
+	storedLocations = connection.register(user, userUrl, password, numChunks)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
