@@ -16,6 +16,12 @@ def main():
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 	print(connection)
 
+	print(connection.getLocalPasswordData() + '\n\n')
+
+	print(connection.getUserPasswordMap() + '\n\n')
+
+	exit(0)
+
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	threadCounts = [1, 5, 10, 20, 50]
@@ -24,9 +30,12 @@ def main():
 		print("Testing with " + str(t) + " clients")
 		threads = []
 		for _ in range(t):
-			threads.append([testRegisterTime, 'zbookbin', 5])
-		
+			thisConnection = xmlrpc.client.ServerProxy(serverUrl)
+			threads.append([testRegisterTime, 'zbookbin', 5, 4, thisConnection])
+
 		runThreads(threads)
+
+	exit(0)
 
 
 	print("Test 2: Node failures vs percentage of successful searches")
@@ -43,7 +52,7 @@ def main():
 			url = ''.join(random.choice(letters) for i in range(15))
 			urls.append(url)
 			password = "hello12345"
-			register('zbookbin', url, password)
+			register('zbookbin', url, password, 4, connection)
 
 		print(testSearchTime('zbookbin', 5, urls))
 
@@ -90,16 +99,16 @@ def runThreads(routines):
 	for t in threads:
 		t.join()
 
-def testRegisterTime(user, repetitions, numChunks=4):
-	url = ''.join(random.choice(letters) for i in range(15))
+def testRegisterTime(user, repetitions, numChunks, thisConnection):
 	password = "hello12345"
 
 	start = time.perf_counter()
 	for _ in range(repetitions):
-		register(user, url, password, numChunks)
+		url = ''.join(random.choice(letters) for i in range(15))
+		register(user, url, password, numChunks, thisConnection)
 	stop = time.perf_counter()
 
-	return stop - start / repetitions
+	return round((stop - start) / repetitions, 3)
 
 def testSearchTime(user, repetitions, urls):
 
@@ -109,16 +118,18 @@ def testSearchTime(user, repetitions, urls):
 		search(user, url)
 	stop = time.perf_counter()
 
-	return stop - start / repetitions
+	return (stop - start) / repetitions
 
 
-def register(user, url, password, numChunks=4):
+def register(user, url, password, numChunks, thisConnection):
 	start = time.perf_counter()
 
 	if len(password) < numChunks:
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
-	storedLocations = connection.register(user, userUrl, password, numChunks)
+	
+	print(thisConnection, user, userUrl, password, numChunks)
+	storedLocations = thisConnection.register(user, userUrl, password, numChunks)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
@@ -136,7 +147,7 @@ def update(user, url, password):
 	if result == 'No permissions to search for this password' or result == 'No record of key':
 		return result
 
-	return register(user, url, password)
+	return register(user, url, password, 4, connection)
 
 def delete(user, url):
 	userUrl = user + ' ' + url
