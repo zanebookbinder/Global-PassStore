@@ -5,23 +5,22 @@ from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, 
 import random
 import string
 import threading
+from multiprocessing import Process
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures.process import ProcessPoolExecutor
 
 connection = None
 letters = string.ascii_lowercase
+serverUrl = 'http://3.98.96.39:8062/'
 
 def main():
-	global connection
+	global connection, serverUrl
 
-	serverUrl = 'http://3.98.96.39:8062/'
 	connection = xmlrpc.client.ServerProxy(serverUrl)
-	print(connection)
 
-	print(connection.getLocalPasswordData() + '\n\n')
+	test1()
 
-	print(connection.getUserPasswordMap() + '\n\n')
-
-	exit(0)
-
+def test1():
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	threadCounts = [1, 5, 10, 20, 50]
@@ -31,16 +30,16 @@ def main():
 		threads = []
 		for _ in range(t):
 			thisConnection = xmlrpc.client.ServerProxy(serverUrl)
-			threads.append([testRegisterTime, 'zbookbin', 5, 4, thisConnection])
+			threads.append([testRegisterTime, 'zbookbin', 2, 4, thisConnection])
 
 		runThreads(threads)
 
-	exit(0)
 
-
+def test2():
 	print("Test 2: Node failures vs percentage of successful searches")
 	# idk how we do this one
 
+def test3():
 	print("Test 3: Number of passwords stored in GPS vs. search time")
 
 	passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
@@ -56,13 +55,15 @@ def main():
 
 		print(testSearchTime('zbookbin', 5, urls))
 
+
+def test4():
 	print("Test 4: Password chunk count vs. registration time")
 
 	chunkCounts = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 	for c in chunkCounts:
 		print("testing average registration time with " + str(c) + " chunks")
-		print(testRegisterTime('zbookbin', 5, c))
+		print(testRegisterTime('zbookbin', 5, c, connection))
 
 
 # register 5 passwords with either of these chunk Counts and find the average time
@@ -75,9 +76,6 @@ def main():
 
 # runThreads(threads)
 
-
-
-
 #register(user, url, password)
 #search (user, url)
 #update (user, url, password)
@@ -88,24 +86,73 @@ def runThreads(routines):
 	containing the thread entrypoint, followed by the arguments. E.g. [myFunc, 1, 2]
 	The threads are then run concurrently, and the function returns when all finish.
 	"""
+# 	executor = ThreadPoolExecutor(len(routines))
+# 	# future = executor.submit(task, ("Completed"))
+# #    print(future.done())
+# #    sleep(2)
+# #    print(future.done())
+# #    print(future.result())
+# 	threads = []
+# 	for routine in routines:
+# 		entry, *args = routine
+# 		threads.append(executor.submit(entry, args[0],args[1],args[2],args[3]))
+
+# 	print("Threads", threads)
+# 	for t in threads:
+# 		print("\n")
+# 		print(t.result())
+
+	# for result in executor.map(entry, args):
+	# 	print(results)
+
+	# with ThreadPoolExecutor(max_workers = 3) as executor:
+	# 	for routine in routines:
+	# 		entry, *arguments = routine
+	# 		results = executor.map(entry, arguments)
+
+	# threads = []
+	# for routine in routines:
+	# 	entry, *arguments = routine
+	# 	# print(entry)
+	# 	# print(arguments)
+	# 	print(routine)
+	# 	threads.append(executor.submit(routine))
+	# 	# threads.append(threading.Thread(target=entry,args=(arguments)))
+
+	# print(threads) 
+
+	# print(executor)
+
+	# executor.shutdown(wait=True)
+
+	# for t in threads:
+	# 	t.start()
+    
+	# for t in threads:
+	# 	t.join()
+
 	threads = []
 	for routine in routines:
 		entry, *arguments = routine
-		threads.append(threading.Thread(target=entry,args=(arguments)))
-
+		threads.append(threading.Thread(target=entry, args=(arguments)))
+	
 	for t in threads:
 		t.start()
-    
+
 	for t in threads:
 		t.join()
 
 def testRegisterTime(user, repetitions, numChunks, thisConnection):
 	password = "hello12345"
 
+	h = 'http://' + random.choice(americasHosts) + ':8062/'
+	server = xmlrpc.client.ServerProxy(h)
+	print(server)
+
 	start = time.perf_counter()
 	for _ in range(repetitions):
 		url = ''.join(random.choice(letters) for i in range(15))
-		register(user, url, password, numChunks, thisConnection)
+		register(user, url, password, numChunks, server)
 	stop = time.perf_counter()
 
 	return round((stop - start) / repetitions, 3)
@@ -128,8 +175,9 @@ def register(user, url, password, numChunks, thisConnection):
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
 	
-	print(thisConnection, user, userUrl, password, numChunks)
+	print("Register:", user, url, password, numChunks, thisConnection)
 	storedLocations = thisConnection.register(user, userUrl, password, numChunks)
+	print("Done with register:", user, url, password, numChunks, thisConnection)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()

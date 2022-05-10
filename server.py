@@ -194,6 +194,7 @@ def split_evenly(a, n):
 # put a (user + site), (password) pair into memory
 def put(key, val):
 	localPasswordData[key] = val
+	print("Now storing " + val + " at key " + key)
 	return 1
 
 
