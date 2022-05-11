@@ -135,7 +135,7 @@ def runThreads(routines):
 	threads = []
 	for routine in routines:
 		entry, *arguments = routine
-		threads.append(Process(target=entry, args=(arguments)))
+		threads.append(threading.Thread(target=entry, args=(arguments)))
 	
 	for t in threads:
 		t.start()
@@ -180,7 +180,7 @@ def register(user, url, password, numChunks, thisConnection, i):
 	userUrl = user + ' ' + url
 	
 	print("Thread " + str(i) + " Register:", user, url, password, numChunks, thisConnection)
-	storedLocations = thisConnection.register(user, userUrl, password, numChunks)
+	storedLocations = thisConnection.registerThread(user, userUrl, password, numChunks)
 	print("Thread " + str(i) + " done with register:", user, url, password, numChunks, thisConnection)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))

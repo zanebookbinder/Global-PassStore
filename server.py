@@ -79,7 +79,7 @@ def getCluster(ip):
 			return key
 
 def registerThread(username, key, val, numChunks=4):
-	newThread = Process(target=register, args=(username, key, val, numChunks))
+	newThread = threading.Thread(target=register, args=(username, key, val, numChunks))
 	# threads = []
 	# for routine in routines:
 	# 	entry, *arguments = routine
