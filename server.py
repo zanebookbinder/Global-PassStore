@@ -78,6 +78,15 @@ def getCluster(ip):
 		if ip in clusterList:
 			return key
 
+def registerThread(username, key, val, numChunks=4):
+	newThread = Process(target=register, args=(username, key, val, numChunks))
+	# threads = []
+	# for routine in routines:
+	# 	entry, *arguments = routine
+	# 	threads.append(Process(target=entry, args=(arguments)))
+	
+	newThread.start()
+
 def register(username, key, val, numChunks=4):
 	"""
 	registers a username, key, value across this and other
@@ -479,6 +488,7 @@ def main():
 		with SimpleXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
 			server.register_function(register)
+			server.register_function(registerThread)
 			server.register_function(search)
 			server.register_function(put)
 			server.register_function(getUserPasswordMap)

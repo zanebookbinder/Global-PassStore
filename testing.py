@@ -23,14 +23,15 @@ def main():
 def test1():
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	threadCounts = [1, 5, 10, 20, 50]
+	# threadCounts = [1, 5, 10, 20, 50]
+	threadCounts = [50]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
 		threads = []
-		for _ in range(t):
+		for i in range(t):
 			thisConnection = xmlrpc.client.ServerProxy(serverUrl)
-			threads.append([testRegisterTime, 'zbookbin', 2, 4, thisConnection])
+			threads.append([testRegisterTime, 'zbookbin', 2, 4, serverUrl, i])
 
 		runThreads(threads)
 
@@ -134,25 +135,28 @@ def runThreads(routines):
 	threads = []
 	for routine in routines:
 		entry, *arguments = routine
-		threads.append(threading.Thread(target=entry, args=(arguments)))
+		threads.append(Process(target=entry, args=(arguments)))
 	
 	for t in threads:
 		t.start()
 
-	for t in threads:
-		t.join()
+	# for t in threads:
+	# 	t.join()
 
-def testRegisterTime(user, repetitions, numChunks, thisConnection):
+def testRegisterTime(user, repetitions, numChunks, thisUrl, i):
 	password = "hello12345"
 
-	h = 'http://' + random.choice(americasHosts) + ':8062/'
-	server = xmlrpc.client.ServerProxy(h)
-	print(server)
+	# h = 'http://' + random.choice(americasHosts) + ':8062/'
+	# server = xmlrpc.client.ServerProxy(h)
+
+	server = xmlrpc.client.ServerProxy(thisUrl)
+
+	print("Testing register in thread: " + str(i))
 
 	start = time.perf_counter()
 	for _ in range(repetitions):
 		url = ''.join(random.choice(letters) for i in range(15))
-		register(user, url, password, numChunks, server)
+		register(user, url, password, numChunks, server, i)
 	stop = time.perf_counter()
 
 	return round((stop - start) / repetitions, 3)
@@ -168,16 +172,16 @@ def testSearchTime(user, repetitions, urls):
 	return (stop - start) / repetitions
 
 
-def register(user, url, password, numChunks, thisConnection):
+def register(user, url, password, numChunks, thisConnection, i):
 	start = time.perf_counter()
 
 	if len(password) < numChunks:
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
 	
-	print("Register:", user, url, password, numChunks, thisConnection)
+	print("Thread " + str(i) + " Register:", user, url, password, numChunks, thisConnection)
 	storedLocations = thisConnection.register(user, userUrl, password, numChunks)
-	print("Done with register:", user, url, password, numChunks, thisConnection)
+	print("Thread " + str(i) + " done with register:", user, url, password, numChunks, thisConnection)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
