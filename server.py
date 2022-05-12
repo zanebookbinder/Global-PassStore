@@ -116,7 +116,7 @@ def register(username, key, val, numChunks=4):
 
 	print("redistributing password for replication")
 	replicationStoredLocations, newShuffledServerAddrs = storeChunks(newShuffledServerAddrs, key, chunkStorageList, chunks)
-	storedLocations.extend(replicationStoredLocations) # stored locations contains the places the password is stored
+	 # stored locations contains the places the password is stored
 
 	# propagate message out to nodes in my cluster
 	print(f"Propagating to other nodes in my cluster: {myCluster}")
@@ -128,7 +128,7 @@ def register(username, key, val, numChunks=4):
 
 	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	newThread.start()
-	return storedLocations
+	return replicationStoredLocations
 
 def replicate(chunkStorageList, key):
 	threads = []
