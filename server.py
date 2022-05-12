@@ -76,13 +76,6 @@ def getCluster(ip):
 		if ip in clusterList:
 			return key
 
-def registerThread(username, key, val, numChunks=4):
-	newThread = threading.Thread(target=register, args=(username, key, val, numChunks))
-	print("CREATING NEW THREAD TO REGISTER: ", username, key, val, numChunks)
-	
-	newThread.start()
-	return []
-
 def register(username, key, val, numChunks=4):
 	"""
 	registers a username, key, value across this and other
@@ -92,6 +85,7 @@ def register(username, key, val, numChunks=4):
 		key: combination of username and url, e.g. 'zbookbin amazon.com
 		value: password to store
 	"""
+
 	print('in server register function')
 	print("Current username:", username)
 	print("Current key:", key)
@@ -129,15 +123,16 @@ def register(username, key, val, numChunks=4):
 	otherHostsInCluster = hostClusterMap[myCluster].copy()
 	otherHostsInCluster.remove(myPublicIP)
 
-
-	threads = []
-	# threads.append(threading.Thread(target = propagate, args = (key, chunkStorageList, otherHostsInCluster,)))
-	threads.append([propagate, key, chunkStorageList, otherHostsInCluster])
-
 	propagate(key, chunkStorageList, otherHostsInCluster)
-	
-	# tell nodes in other clusters to propagate the message to their respective neighbor nodes
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate to their cluster")
+
+	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
+	newThread.start()
+	return storedLocations
+
+def replicate(chunkStorageList, key):
+	threads = []
+	
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
 	for ipList in list(otherClusters.values()):
@@ -154,7 +149,7 @@ def register(username, key, val, numChunks=4):
 	runThreads(threads)
 	
 	print("password has been distributed twice. register job complete!")
-	return storedLocations
+	return
 
 def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 	"""
@@ -484,7 +479,6 @@ def main():
 		with SimpleXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
 			server.register_function(register)
-			server.register_function(registerThread)
 			server.register_function(search)
 			server.register_function(put)
 			server.register_function(getUserPasswordMap)
