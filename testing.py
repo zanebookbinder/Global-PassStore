@@ -24,7 +24,7 @@ def test1():
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	# threadCounts = [1, 5, 10, 20, 50]
-	threadCounts = [50]
+	threadCounts = [2]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
@@ -180,13 +180,13 @@ def register(user, url, password, numChunks, thisConnection, i):
 	userUrl = user + ' ' + url
 	
 	print("Thread " + str(i) + " Register:", user, url, password, numChunks, thisConnection)
-	storedLocations = thisConnection.register(user, userUrl, password, numChunks)
+	storedLocations = thisConnection.registerThread(user, userUrl, password, numChunks)
 	print("Thread " + str(i) + " done with register:", user, url, password, numChunks, thisConnection)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
 		return "Success! Your password is stored in these places: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
-	return "Failure! " + storedLocations
+	return "Failure! " + str(storedLocations)
 
 def search(user, url):
 	userUrl = user + ' ' + url

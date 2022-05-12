@@ -77,12 +77,12 @@ def register(user, url, password):
 	if len(password) < numChunks:
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
-	storedLocations = connection.register(user, userUrl, password, numChunks)
+	storedLocations = connection.registerThread(user, userUrl, password, numChunks)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
 		return "Success! Your password is stored in these places: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
-	return "Failure! " + storedLocations
+	return "Failure! " + str(storedLocations)
 
 def search(user, url):
 	userUrl = user + ' ' + url
