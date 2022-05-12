@@ -107,6 +107,7 @@ def testRegisterTime(user, repetitions, numChunks, connection, i):
 		print(q)
 		url = ''.join(random.choice(letters) for i in range(15))
 		register(user, url, password, numChunks, connection, i)
+		time.sleep(2)
 	stop = time.perf_counter()
 
 	return round((stop - start) / repetitions, 3)
@@ -129,13 +130,14 @@ def register(user, url, password, numChunks, thisConnection, i):
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
 	
-	print("Register:", user, url, password, numChunks, thisConnection)
-
 
 	myConnection = xmlrpc.client.ServerProxy(serverUrl)
+	# myConnection = xmlrpc.client.ServerProxy("http://" + random.choice(hosts) + ":8062/")
+
+	print("Register:", user, url, password, numChunks, myConnection)
 
 	storedLocations = myConnection.register(user, userUrl, password, numChunks)
-	print("Done with register:", user, url, password, numChunks, myConnection)
+	print("Done with register:", user, url, password, numChunks, myConnection, storedLocations)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
