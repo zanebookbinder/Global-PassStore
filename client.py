@@ -81,8 +81,8 @@ def register(user, url, password):
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
-		return "Success! Your password is stored in these places: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
-	return "Failure! " + str(storedLocations)
+		return "Success! Your password is saved, and is being replicated to: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
+	return "Failure! " + storedLocations
 
 def search(user, url):
 	userUrl = user + ' ' + url
