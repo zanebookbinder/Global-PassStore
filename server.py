@@ -17,6 +17,7 @@ import xmlrpc.client
 import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 from xmlrpc.server import SimpleXMLRPCServer
+from socketserver import ThreadingMixIn
 from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
 import sys
 import math
@@ -24,7 +25,8 @@ import random
 import time
 import threading
 
-print(hosts)
+class SimpleThreadedXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
+    pass
 
 ids = {}
 
@@ -476,7 +478,7 @@ def main():
 
 		print("Connected to other hosts")
 
-		with SimpleXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
+		with SimpleThreadedXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
 			server.register_function(register)
 			server.register_function(search)
