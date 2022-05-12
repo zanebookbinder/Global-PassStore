@@ -3,13 +3,11 @@ Program Description: Distributed password manager server that stores and manages
 websites, and 
 
 TODO:
-	1. Make a better scheme for replicating (cluster-based) --> store first version on local cluster, replicas anywhere
-	2. Add username security (don't allow user to access someone else's data)
-	3. Remove all constants so serverCount is the only thing that knows how many servers we have
-	4. Make number of chunks customizable easily with global variable
-	5. Handle failures and joining
-
-	6. Make update/register synchronized on one key
+	1. Add username security (don't allow user to access someone else's data)
+	2. Remove all constants so serverCount is the only thing that knows how many servers we have
+	3. Make number of chunks customizable easily with global variable
+	4. Handle failures and joining
+	5. Make update/register synchronized on one key
 """
 
 import os
@@ -81,10 +79,6 @@ def getCluster(ip):
 def registerThread(username, key, val, numChunks=4):
 	newThread = threading.Thread(target=register, args=(username, key, val, numChunks))
 	print("CREATING NEW THREAD TO REGISTER: ", username, key, val, numChunks)
-	# threads = []
-	# for routine in routines:
-	# 	entry, *arguments = routine
-	# 	threads.append(Process(target=entry, args=(arguments)))
 	
 	newThread.start()
 	return []

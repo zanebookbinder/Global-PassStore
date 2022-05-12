@@ -87,51 +87,6 @@ def runThreads(routines):
 	containing the thread entrypoint, followed by the arguments. E.g. [myFunc, 1, 2]
 	The threads are then run concurrently, and the function returns when all finish.
 	"""
-# 	executor = ThreadPoolExecutor(len(routines))
-# 	# future = executor.submit(task, ("Completed"))
-# #    print(future.done())
-# #    sleep(2)
-# #    print(future.done())
-# #    print(future.result())
-# 	threads = []
-# 	for routine in routines:
-# 		entry, *args = routine
-# 		threads.append(executor.submit(entry, args[0],args[1],args[2],args[3]))
-
-# 	print("Threads", threads)
-# 	for t in threads:
-# 		print("\n")
-# 		print(t.result())
-
-	# for result in executor.map(entry, args):
-	# 	print(results)
-
-	# with ThreadPoolExecutor(max_workers = 3) as executor:
-	# 	for routine in routines:
-	# 		entry, *arguments = routine
-	# 		results = executor.map(entry, arguments)
-
-	# threads = []
-	# for routine in routines:
-	# 	entry, *arguments = routine
-	# 	# print(entry)
-	# 	# print(arguments)
-	# 	print(routine)
-	# 	threads.append(executor.submit(routine))
-	# 	# threads.append(threading.Thread(target=entry,args=(arguments)))
-
-	# print(threads) 
-
-	# print(executor)
-
-	# executor.shutdown(wait=True)
-
-	# for t in threads:
-	# 	t.start()
-    
-	# for t in threads:
-	# 	t.join()
-
 	threads = []
 	for routine in routines:
 		entry, *arguments = routine
@@ -140,18 +95,10 @@ def runThreads(routines):
 	for t in threads:
 		t.start()
 
-	# for t in threads:
-	# 	t.join()
-
 def testRegisterTime(user, repetitions, numChunks, thisUrl, i):
 	password = "hello12345"
 
-	# h = 'http://' + random.choice(americasHosts) + ':8062/'
-	# server = xmlrpc.client.ServerProxy(h)
-
 	server = xmlrpc.client.ServerProxy(thisUrl)
-
-	print("Testing register in thread: " + str(i))
 
 	start = time.perf_counter()
 	for _ in range(repetitions):
