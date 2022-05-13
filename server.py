@@ -27,6 +27,8 @@ import threading
 
 lock = threading.Lock()
 
+threadCount = 0
+
 ids = {}
 
 for i, host in enumerate(hosts):
@@ -127,8 +129,12 @@ def register(username, key, val, numChunks=4):
 
 	# replicate(chunkStorageList, key)
 
+	while(threadCount != 0):
+		sleep(0.1)
+		
 	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	newThread.start()
+	threadCount+=1
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return replicationStoredLocations
 
@@ -153,6 +159,7 @@ def replicate(chunkStorageList, key):
 	
 	print("password for key " + key + " has been distributed twice. register job complete!")
 	lock.release()
+	threadCount-=1
 	return
 
 def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
