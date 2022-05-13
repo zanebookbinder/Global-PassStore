@@ -23,11 +23,12 @@ def main():
 def test1(connection):
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	# threadCounts = [1, 5, 10, 20, 50]
-	threadCounts = [5]
+	threadCounts = [1, 5, 10, 20, 50]
+	# threadCounts = [50]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
+		start = time.perf_counter()
 	# testRegisterTime('zbookbin', 5, 4, connection, 0)
 		threads = []
 		for i in range(t):
@@ -35,6 +36,8 @@ def test1(connection):
 			threads.append([testRegisterTime, 'zbookbin', 2, 4, i, threadConnection])
 
 		runThreads(threads)
+		stop = time.perf_counter()
+		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round(stop-start, 3)))
 
 
 def test2():
