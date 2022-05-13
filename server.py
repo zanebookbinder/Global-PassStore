@@ -25,9 +25,6 @@ import random
 import time
 import threading
 
-class SimpleThreadedXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
-    pass
-
 ids = {}
 
 for i, host in enumerate(hosts):
@@ -126,7 +123,7 @@ def register(username, key, val, numChunks=4):
 	propagate(key, chunkStorageList, otherHostsInCluster)
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
 
-	# replicate(chunkStorageList, key)
+	replicate(chunkStorageList, key)
 
 	# newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	# newThread.start()
@@ -478,7 +475,7 @@ def main():
 
 		print("Connected to other hosts")
 
-		with SimpleThreadedXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
+		with SimpleXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
 			server.register_function(register)
 			server.register_function(search)
