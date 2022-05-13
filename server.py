@@ -132,7 +132,7 @@ def register(username, key, val, numChunks=4):
 	# replicate(chunkStorageList, key)
 
 	while(threadCount != 0):
-		sleep(0.1)
+		time.sleep(0.1)
 
 	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	newThread.start()
