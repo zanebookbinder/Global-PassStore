@@ -424,8 +424,8 @@ def runThreads(routines):
 	for t in threads:
 		t.start()
     
-	# for t in threads:
-	# 	t.join()
+	for t in threads:
+		t.join()
 
 ### Client Connection Methods ###
 
