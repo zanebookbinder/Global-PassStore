@@ -24,7 +24,7 @@ def test1(connection):
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	# threadCounts = [1, 5, 10, 20, 50]
-	threadCounts = [2]
+	threadCounts = [5]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
@@ -32,7 +32,7 @@ def test1(connection):
 		threads = []
 		for i in range(t):
 			threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-			threads.append([testRegisterTime, 'zbookbin', 3, 4, i, threadConnection])
+			threads.append([testRegisterTime, 'zbookbin', 2, 4, i, threadConnection])
 
 		runThreads(threads)
 
