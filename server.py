@@ -89,6 +89,8 @@ def register(username, key, val, numChunks=4):
 		value: password to store
 	"""
 
+	global threadCount
+
 	print('in server register function with username and key: ', username, key)
 
 	if numChunks > len(val):
