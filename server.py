@@ -127,6 +127,7 @@ def register(username, key, val, numChunks=4):
 
 	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	newThread.start()
+	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return replicationStoredLocations
 
 def replicate(chunkStorageList, key):
@@ -299,7 +300,7 @@ def propagate(user, chunkStorageList, hosts=hosts):
 	Informs other hosts of updated password chunk mapping to servers
 	"""
 
-	print("updating local user-password map")
+	print(f'running propagate on server {ids[myPublicIP]}, user {user}')
 	addHosts(user, chunkStorageList)
 
 	print("sending update to other server nodes")
