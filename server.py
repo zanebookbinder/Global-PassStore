@@ -88,9 +88,7 @@ def register(username, key, val, numChunks=4):
 		value: password to store
 	"""
 
-	print('in server register function')
-	print("Current username:", username)
-	print("Current key:", key)
+	print('in server register function with username and key: ', username, key)
 
 	if numChunks > len(val):
 		print("Too few chunks for this length password!")
@@ -110,23 +108,23 @@ def register(username, key, val, numChunks=4):
 	# list of servers that chunks can be stored on
 	shuffledServerAddrs = list(otherServers.keys())
 
-	print("trying to split up password amongst other hosts")
+	print("trying to split up password for " + key + " amongst other hosts")
 	# shuffling through the other server connections and splitting up the current password 
 	# amongst those servers, and propagating the update to each server as well
 	storedLocations, newShuffledServerAddrs = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks)
 	# newShuffledServerAddrs stores the list of hosts that don't already have a piece of the passsword
 
-	print("redistributing password for replication")
+	print("redistributing password for key " + key + " for replication")
 	replicationStoredLocations, newShuffledServerAddrs = storeChunks(newShuffledServerAddrs, key, chunkStorageList, chunks)
 	 # stored locations contains the places the password is stored
 
 	# propagate message out to nodes in my cluster
-	print(f"Propagating to other nodes in my cluster: {myCluster}")
+	print(f"Propagating key " + key + " to other nodes in my cluster: {myCluster}")
 	otherHostsInCluster = hostClusterMap[myCluster].copy()
 	otherHostsInCluster.remove(myPublicIP)
 
 	propagate(key, chunkStorageList, otherHostsInCluster)
-	print("Local propagation complete. Now, telling one node in all other cluster to propagate to their cluster")
+	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
 
 	# replicate(chunkStorageList, key)
 
@@ -147,13 +145,12 @@ def replicate(chunkStorageList, key):
 		randNodeOtherHosts.remove(randNodeIP)
 		
 		# tell that random other node to propagate update to its own cluster
-		otherServers[randNodeIP].propagate(key, chunkStorageList, randNodeOtherHosts)
-		# threads.append([otherServers[randNodeIP].propagate, key, chunkStorageList, randNodeOtherHosts])
-		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
+		threads.append([otherServers[randNodeIP].propagate, key, chunkStorageList, randNodeOtherHosts])
+		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster about key " + key)
 
-	# runThreads(threads)
+	runThreads(threads)
 	
-	print("password has been distributed twice. register job complete!")
+	print("password for key " + key + " has been distributed twice. register job complete!")
 	return
 
 def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
@@ -168,7 +165,7 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 	chunkCount = 1
 	for randomHost in randomHosts:
 		connection = otherServers[randomHost]
-		print("current connection: id=", ids[randomHost])
+		print("current connection for key " + key + " : id=", ids[randomHost])
 		connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([randomHost, chunkCount])
 		storedLocations.append(hostCountryMap[randomHost])

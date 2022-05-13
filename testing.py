@@ -107,7 +107,6 @@ def testRegisterTime(user, repetitions, numChunks, connection, i):
 		print(q)
 		url = ''.join(random.choice(letters) for i in range(15))
 		register(user, url, password, numChunks, connection, i)
-		time.sleep(2)
 	stop = time.perf_counter()
 
 	return round((stop - start) / repetitions, 3)
