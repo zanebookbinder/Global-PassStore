@@ -131,17 +131,17 @@ def register(username, key, val, numChunks=4):
 
 	# replicate(chunkStorageList, key)
 
-	while(threadCount != 0):
-		time.sleep(0.1)
+	# while(threadCount != 0):
+	# 	time.sleep(0.1)
 
 	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	newThread.start()
-	threadCount+=1
+	# threadCount+=1
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return replicationStoredLocations
 
 def replicate(chunkStorageList, key):
-	lock.acquire()
+	# lock.acquire()
 	threads = []
 	
 	otherClusters = hostClusterMap.copy()
@@ -152,16 +152,18 @@ def replicate(chunkStorageList, key):
 		randNodeCluster = getCluster(randNodeIP)
 		randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
 		randNodeOtherHosts.remove(randNodeIP)
+
+		newConnect = xmlrpc.client.ServerProxy('http://' + randNodeIP + ':' + portno + '/')
 		
 		# tell that random other node to propagate update to its own cluster
-		threads.append([otherServers[randNodeIP].propagate, key, chunkStorageList, randNodeOtherHosts])
+		threads.append([newConnect.propagate, key, chunkStorageList, randNodeOtherHosts])
 		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster about key " + key)
 
 	runThreads(threads)
 	
 	print("password for key " + key + " has been distributed twice. register job complete!")
-	lock.release()
-	threadCount-=1
+	# lock.release()
+	# threadCount-=1
 	return
 
 def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
