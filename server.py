@@ -168,7 +168,7 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 	chunkCount = 1
 	for randomHost in randomHosts:
 		# connection = otherServers[randomHost]
-		connection = xmlrpc.client.ServerProxy('http://' + randomHost + ':' + portno + '/')
+		connection = xmlrpc.client.ServerProxy('http://' + randomHost + ':' + str(portno) + '/')
 		print("current connection for key " + key + " : id=", ids[randomHost])
 		connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([randomHost, chunkCount])
@@ -247,7 +247,7 @@ def search(username, key):
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
 				# connection = otherServers[hostAddrs[hostAddr]]
-				connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + portno + '/')
+				connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + str(portno) + '/')
 				lookupResult = connection.lookup(key + str(pieceNum))
 				if lookupResult != -1:
 					print("found password piece on other server host")
