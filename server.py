@@ -214,7 +214,7 @@ def lookup(key):
 
 # collect the pieces of a password given user + site
 def search(username, key):
-	return getUserPasswordMap(), len(list(userPasswordMap.keys()))
+	return getUserPasswordMap() + "\n"+  str(len(list(userPasswordMap.keys())))
 	print("starting search...")
 
 	user = key.split(' ')[0]
