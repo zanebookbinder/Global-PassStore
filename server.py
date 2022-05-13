@@ -147,10 +147,11 @@ def replicate(chunkStorageList, key):
 		randNodeOtherHosts.remove(randNodeIP)
 		
 		# tell that random other node to propagate update to its own cluster
-		threads.append([otherServers[randNodeIP].propagate, key, chunkStorageList, randNodeOtherHosts])
+		otherServers[randNodeIP].propagate(key, chunkStorageList, randNodeOtherHosts)
+		# threads.append([otherServers[randNodeIP].propagate, key, chunkStorageList, randNodeOtherHosts])
 		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster")
 
-	runThreads(threads)
+	# runThreads(threads)
 	
 	print("password has been distributed twice. register job complete!")
 	return
