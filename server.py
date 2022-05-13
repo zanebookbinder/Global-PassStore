@@ -127,8 +127,8 @@ def register(username, key, val, numChunks=4):
 
 	# replicate(chunkStorageList, key)
 
-	# newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
-	# newThread.start()
+	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
+	newThread.start()
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return replicationStoredLocations
 
