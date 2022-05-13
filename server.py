@@ -25,6 +25,9 @@ import random
 import time
 import threading
 
+class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
+	pass
+
 ids = {}
 
 for i, host in enumerate(hosts):
@@ -481,7 +484,7 @@ def main():
 
 		print("Connected to other hosts")
 
-		with SimpleXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
+		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
 			server.register_function(register)
 			server.register_function(search)
