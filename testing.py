@@ -28,7 +28,7 @@ def test1(connection):
 
 	# for t in threadCounts:
 		# print("Testing with " + str(t) + " clients")
-	testRegisterTime('zbookbin', 3, 4, connection, 0)
+	testRegisterTime('zbookbin', 5, 4, connection, 0)
 	# threads = []
 	# for i in range(3):
 	# 	thisConnection = xmlrpc.client.ServerProxy(serverUrl)
