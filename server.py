@@ -101,8 +101,8 @@ def register(username, key, val, numChunks=4):
 		return 'no permissions to register password for this user'
 
 	# if new user tries to register but it already exists in our map, they must use the update command 
-	if search(username, key) != 'No record of key':
-		return "You already have a password for this site! Use the update command to override it."
+	# if search(username, key) != 'No record of key':
+	# 	return "You already have a password for this site! Use the update command to override it."
 
 	chunks = split_evenly(val, numChunks)
 	chunkStorageList = []
