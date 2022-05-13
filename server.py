@@ -128,8 +128,8 @@ def register(username, key, val, numChunks=4):
 	propagate(key, chunkStorageList, otherHostsInCluster)
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
 
-	# newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
-	# newThread.start()
+	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
+	newThread.start()
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return replicationStoredLocations
 
@@ -167,7 +167,8 @@ def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
 
 	chunkCount = 1
 	for randomHost in randomHosts:
-		connection = otherServers[randomHost]
+		# connection = otherServers[randomHost]
+		connection = xmlrpc.client.ServerProxy('http://' + randomHost + ':' + portno + '/')
 		print("current connection for key " + key + " : id=", ids[randomHost])
 		connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([randomHost, chunkCount])
@@ -245,7 +246,8 @@ def search(username, key):
 			else:
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
-				connection = otherServers[hostAddrs[hostAddr]]
+				# connection = otherServers[hostAddrs[hostAddr]]
+				connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + portno + '/')
 				lookupResult = connection.lookup(key + str(pieceNum))
 				if lookupResult != -1:
 					print("found password piece on other server host")
