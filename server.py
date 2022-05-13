@@ -131,6 +131,7 @@ def register(username, key, val, numChunks=4):
 	return replicationStoredLocations
 
 def replicate(chunkStorageList, key):
+	time.sleep(3)
 	threads = []
 	
 	otherClusters = hostClusterMap.copy()
