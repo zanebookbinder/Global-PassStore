@@ -131,7 +131,7 @@ def register(username, key, val, numChunks=4):
 
 	while(threadCount != 0):
 		sleep(0.1)
-		
+
 	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
 	newThread.start()
 	threadCount+=1
@@ -456,6 +456,9 @@ def main():
 	global myPrivateIP
 	global myPublicIP
 	global myCluster
+	global threadCount
+
+	threadCount = 0
 
 	try:
 		sys.stdout = open('outputServer.log', 'w') # print statements go to this file
