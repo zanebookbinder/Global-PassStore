@@ -23,16 +23,16 @@ def main():
 def test1(connection):
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	threadCounts = [1, 5, 10, 20, 50]
-	# threadCounts = [2]
+	# threadCounts = [1, 5, 10, 20, 50]
+	threadCounts = [2]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
 	# testRegisterTime('zbookbin', 5, 4, connection, 0)
 		threads = []
 		for i in range(t):
-			thisConnection = xmlrpc.client.ServerProxy(serverUrl)
-			threads.append([testRegisterTime, 'zbookbin', 2, 4, serverUrl, i])
+			threadConnection = xmlrpc.client.ServerProxy(serverUrl)
+			threads.append([testRegisterTime, 'zbookbin', 3, 4, i, threadConnection])
 
 		runThreads(threads)
 
@@ -99,17 +99,19 @@ def runThreads(routines):
 	for t in threads:
 		t.join()
 
-def testRegisterTime(user, repetitions, numChunks, connection, i):
+def testRegisterTime(user, repetitions, numChunks, i, threadConnection):
 	password = "hello12345"
 
 	# ran = random.choice(hosts)
 	# thisUrl = "http://" + ran + ":8062/"
 
+	# thisConnection = xmlrpc.client.ServerProxy(serverUrl)
+
 	start = time.perf_counter()
 	for q in range(repetitions):
 		print(q)
 		url = ''.join(random.choice(letters) for i in range(15))
-		register(user, url, password, numChunks, connection, i)
+		register(user, url, password, numChunks, threadConnection, i)
 	stop = time.perf_counter()
 
 	return round((stop - start) / repetitions, 3)
@@ -124,8 +126,7 @@ def testSearchTime(user, repetitions, urls):
 
 	return (stop - start) / repetitions
 
-
-def register(user, url, password, numChunks, thisConnection, i):
+def register(user, url, password, numChunks, threadConnection, i):
 	start = time.perf_counter()
 
 	if len(password) < numChunks:
@@ -133,13 +134,15 @@ def register(user, url, password, numChunks, thisConnection, i):
 	userUrl = user + ' ' + url
 	
 
-	myConnection = xmlrpc.client.ServerProxy(serverUrl)
+	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 	# myConnection = xmlrpc.client.ServerProxy("http://" + random.choice(hosts) + ":8062/")
 
-	print("Register:", user, url, password, numChunks, myConnection)
+	print("Register:", user, url, password, numChunks, threadConnection)
 
-	storedLocations = myConnection.register(user, userUrl, password, numChunks)
-	print("Done with register:", user, url, password, numChunks, myConnection, storedLocations)
+
+
+	storedLocations = threadConnection.register(user, userUrl, password, numChunks)
+	print("Done with register:", user, url, password, numChunks, threadConnection, storedLocations)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()

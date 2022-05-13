@@ -128,8 +128,8 @@ def register(username, key, val, numChunks=4):
 	propagate(key, chunkStorageList, otherHostsInCluster)
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
 
-	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
-	newThread.start()
+	# newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
+	# newThread.start()
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return replicationStoredLocations
 
