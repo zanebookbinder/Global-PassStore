@@ -25,6 +25,8 @@ import random
 import time
 import threading
 
+lock = threading.Lock()
+
 ids = {}
 
 for i, host in enumerate(hosts):
@@ -131,7 +133,7 @@ def register(username, key, val, numChunks=4):
 	return replicationStoredLocations
 
 def replicate(chunkStorageList, key):
-	# time.sleep(3)
+	lock.acquire()
 	threads = []
 	
 	otherClusters = hostClusterMap.copy()
@@ -150,6 +152,7 @@ def replicate(chunkStorageList, key):
 	runThreads(threads)
 	
 	print("password for key " + key + " has been distributed twice. register job complete!")
+	lock.release()
 	return
 
 def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
