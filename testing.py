@@ -52,11 +52,11 @@ def test2():
 		lines = [line.rstrip() for line in lines]
 		lines = [line for line in lines if not line == '']
 	
-	for i, url in enumerate(lines):
-		if i % 10 == 0:
-			print(str(i), url)
-		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-		register('zbookbin', url, 'mypassword5',2,threadConnection, i)
+	# for i, url in enumerate(lines):
+	# 	if i % 10 == 0:
+	# 		print(str(i), url)
+	# 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
+	# 	register('zbookbin', url, 'mypassword5',2,threadConnection, i)
 
 	killConnection = xmlrpc.client.ServerProxy('http://' + random.choice(hosts) + ':8062/')
 	killConnection.kill()

@@ -471,7 +471,7 @@ def testNPasswordsStored(n):
 
 def kill():
 	print('Killing server now. Goodbye!')
-	self._BaseServer__shutdown_request = True
+	server._BaseServer__shutdown_request = True
 	exit(0)
 
 def main():
