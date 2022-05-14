@@ -21,7 +21,8 @@ def main():
 
 	# test1(connection)
 	# test4()
-	test3()
+	# test3()
+	test2()
 
 def test1(connection):
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
@@ -45,30 +46,47 @@ def test1(connection):
 
 def test2():
 	print("Test 2: Node failures vs percentage of successful searches")
-	# idk how we do this one
+
+	with open('new.txt') as file:
+		lines = file.readlines()
+		lines = [line.rstrip() for line in lines]
+		lines = [line for line in lines if not line == '']
+	
+	for i, url in enumerate(lines):
+		if i % 10 == 0:
+			print(str(i), url)
+		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
+		register('zbookbin', url, 'mypassword5','2',threadConnection, i)
+
+	killConnection = xmlrpc.client.ServerProxy('http://' + random.choice(hosts) + ':8062/')
+	killConnection.kill()
+
+	failed = 0
+	for url in lines:
+		result = search('zbookbin', url)
+		if type(result) != str:
+			failed+=1
+			print(result)
+		elif result != 'mypassword5':
+			failed+=1
+			print(result)
+
+	print('failed searches (of 100): ' + str(failed))
+
+
+def search(user, url):
+
+
 
 def test3():
 	print("Test 3: Number of passwords stored in GPS vs. search time")
 
-	# passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
-	# urls = []
-
-	# for p in passwordCounts:
-	# 	print("Testing search time with " + str(p) + ' passwords stored')
-	# 	for _ in range(p):
-	# 		# url = ''.join(random.choice(letters) for i in range(15))
-	# 		url = "url" + str(registerCounter)
-	# 		registerCounter += 1
-	# 		urls.append(url)
-	# 		password = "hello12345"
-	# 		register('test', url, password, 4, connection)
 	urls = []
 	for i in range(1000000):
 		urls.append('url' + str(i))
 
 	for _ in range(3):
 		print(testSearchTime('zbookbin', 50, urls))
-
 
 def test4():
 	print("Test 4: Password chunk count vs. registration time")
@@ -78,22 +96,6 @@ def test4():
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		print("testing average registration time with " + str(c) + " chunks")
 		print(testRegisterTime('zbookbin', 2, c, 0, threadConnection))
-
-
-# register 5 passwords with either of these chunk Counts and find the average time
-# need to make split a parameter for server.register
-
-	
-# threads = []
-# for _ in range(50):
-# 	threads.append([testRegisterTime, 'zbookbin', ])
-
-# runThreads(threads)
-
-#register(user, url, password)
-#search (user, url)
-#update (user, url, password)
-#delete(ursr, url)
 
 def runThreads(routines):
 	""" Takes in a list of 'routines', which should be structured as a list

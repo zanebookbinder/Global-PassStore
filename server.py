@@ -469,9 +469,9 @@ def testNPasswordsStored(n):
 			put(userUrl, chunk2)			
 			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
-	def kill():
-		print('Killing server now. Goodbye!')
-		exit(0)
+def kill():
+	print('Killing server now. Goodbye!')
+	exit(0)
 
 def main():
 	global myPrivateIP
