@@ -19,12 +19,12 @@ def main():
 
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
-	# test1(connection)
+	# test1()
 	# test4()
 	# test3()
 	test2()
 
-def test1(connection):
+def test1():
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	threadCounts = [1, 5, 10, 20, 50]
@@ -33,7 +33,7 @@ def test1(connection):
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
 		start = time.perf_counter()
-	# testRegisterTime('zbookbin', 5, 4, connection, 0)
+
 		threads = []
 		for i in range(t):
 			threadConnection = xmlrpc.client.ServerProxy(serverUrl)
@@ -116,17 +116,14 @@ def runThreads(routines):
 		t.join()
 
 def testRegisterTime(user, repetitions, numChunks, i, threadConnection):
+	global registerCounter
 	password = "hello12345"
-
-	# ran = random.choice(hosts)
-	# thisUrl = "http://" + ran + ":8062/"
-
-	# thisConnection = xmlrpc.client.ServerProxy(serverUrl)
 
 	start = time.perf_counter()
 	for q in range(repetitions):
 		# print(q)
-		url = ''.join(random.choice(letters) for i in range(15))
+		url = 'url' + str(registerCounter)
+		registerCounter += 1
 		register(user, url, password, numChunks, threadConnection, i)
 	stop = time.perf_counter()
 
@@ -154,12 +151,12 @@ def register(user, url, password, numChunks, threadConnection, i):
 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 	# myConnection = xmlrpc.client.ServerProxy("http://" + random.choice(hosts) + ":8062/")
 
-	# print("Register:", user, url, password, numChunks, threadConnection)
+	print("Register:", user, url, password, numChunks)
 
 
 
 	storedLocations = threadConnection.register(user, userUrl, password, numChunks)
-	# print("Done with register:", user, url, password, numChunks, threadConnection, storedLocations)
+	print("Done with register:", user, url, password, numChunks, storedLocations)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()

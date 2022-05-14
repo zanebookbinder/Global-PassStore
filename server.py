@@ -110,32 +110,19 @@ def register(username, key, val, numChunks=4):
 	print(f'Attemtping to store password for key: {key} to local cluster')
 	localChunkStorageList = storeChunks(otherNodesInCluster, key, chunks)
 
+	print(f'Attemtping to replicate password for key: {key} to other cluster: {replicationCluster}')
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
 	replicationCluster = random.choice(list(otherClusters))
 	replicationNodes = otherClusters[replicationCluster]
-
-	print(f'Attemtping to replicate password for key: {key} to other cluster: {replicationCluster}')
 	replicationChunkStorageList = storeChunks(replicationNodes, key, chunks)
-	# list of servers that chunks can be stored on
-	# shuffledServerAddrs = list(otherServers.keys())
 
-	# shuffling through the other server connections and splitting up the current password 
-	# amongst those servers, and propagating the update to each server as well
-	# storedLocations, newShuffledServerAddrs = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks)
-	# newShuffledServerAddrs stores the list of hosts that don't already have a piece of the passsword
-
-	 # stored locations contains the places the password is stored
-
-	# propagate message out to nodes in my cluster
 	print(f"Propagating key " + key + " to other nodes in my cluster: {myCluster}")
-
 	chunkStorageList = localChunkStorageList + replicationChunkStorageList
 	propagate(key, chunkStorageList, otherNodesInCluster)
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
 
-	newThread = threading.Thread(target=propagateToOtherClusters, args=(chunkStorageList, key))
-	newThread.start()
+	threading.Thread(target=propagateToOtherClusters, args=(chunkStorageList, key)).start()
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
 	return [hostCountryMap[host] for host, _ in replicationChunkStorageList]
 
