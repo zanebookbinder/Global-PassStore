@@ -26,22 +26,29 @@ def main():
 	# test4()
 
 def test1():
+	global registerCounter
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	# threadCounts = [1, 5, 10, 20, 50]
 	threadCounts = [20]
+	repititions = 1
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
 
 		threads = []
 		for i in range(t):
-			threads.append([testRegisterTime, 'zbookbin', 2, 4])
+			threads.append([testRegisterTime, 'zbookbin', repititions, 4])
 
 		start = time.perf_counter()
 		runThreads(threads)
 		stop = time.perf_counter()
 		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round(stop-start, 3)))
+	
+	
+	print(f'We should now have {registerCounter - 1} passwords registered. how many do we have?')
+	newConn = xmlrpc.client.ServerProxy(urlFromIp('3.99.158.136'))
+	print(newConn.getUserPasswordMapLength())
 
 
 def test2():

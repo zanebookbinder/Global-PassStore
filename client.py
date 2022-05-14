@@ -47,7 +47,7 @@ def main():
 				print('\n')
 				print("server userPasswordMap:")
 				print(connection.getUserPasswordMap())
-			if len(parse) == 1 and parse[0] == 'l':
+			if len(parse) == 1 and parse[0] == 'len':
 				print(connection.getUserPasswordMapLength())
 			if len(parse) < 2:
 				print("Must include correct arguments starting with 'register', 'search', or 'update\'")

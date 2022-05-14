@@ -161,7 +161,7 @@ def storeChunks(storageServers, key, chunks):
 
 	chunkCount = 1
 	for randomHost in randomHosts:
-		connection = xmlrpc.client.ServerProxy('http://' + randomHost + ':' + str(portno) + '/')
+		connection = xmlrpc.client.ServerProxy(urlFromIp(randomHost))
 		print("current connection for key " + key + " : id=", ids[randomHost])
 		connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([randomHost, chunkCount])
@@ -299,7 +299,7 @@ def addHosts(userSite, chunkStorageList):
 
 # user = id + site, host = machine hostname, pieceNum = password piece number
 # REMOTE method, makes outgoing RPC calls to other servers
-def propagate(user, chunkStorageList, hosts=hosts):
+def propagate(user, chunkStorageList, hosts):
 	"""
 	Informs other hosts of updated password chunk mapping to servers
 	"""
@@ -308,14 +308,17 @@ def propagate(user, chunkStorageList, hosts=hosts):
 	addHosts(user, chunkStorageList)
 
 	print("sending update to other server nodes")
-	num_threads = 4
-	hosts_split = split_evenly(hosts, num_threads)
-	print('hosts_split:', hosts_split)
-	propagateOps = []
-	for i in range(num_threads):
-		propagateOps.append([propagateThread, user, hosts_split[i], chunkStorageList])
+	for ip in hosts:
+		connection = xmlrpc.client.ServerProxy(urlFromIp(host))
+		connection.addHosts(user, chunkStorageList)
+	# num_threads = 4
+	# hosts_split = split_evenly(hosts, num_threads)
+	# print('hosts_split:', hosts_split)
+	# propagateOps = []
+	# for i in range(num_threads):
+	# 	propagateOps.append([propagateThread, user, hosts_split[i], chunkStorageList])
 
-	runThreads(propagateOps)
+	# runThreads(propagateOps)
 
 def propagateThread(user, hostsList, chunkStorageList):
 	print('propogating to new hostsList')
@@ -443,6 +446,11 @@ def updateMyCluster(myClusterName, message):
 	
 	message()
 	return 0
+
+def urlFromIp(ip):
+	""" Makes a full URL out of an IP address.
+	"""
+	return f'http://{ip}:{portno}/'
 
 def testNPasswordsStored(n):
 	letters = string.ascii_lowercase
