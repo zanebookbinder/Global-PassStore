@@ -50,20 +50,23 @@ def test2():
 def test3():
 	print("Test 3: Number of passwords stored in GPS vs. search time")
 
-	passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
+	# passwordCounts = [1, 9, 90, 900] # 1, 10, 100, 1000 total passwords
+	# urls = []
+
+	# for p in passwordCounts:
+	# 	print("Testing search time with " + str(p) + ' passwords stored')
+	# 	for _ in range(p):
+	# 		# url = ''.join(random.choice(letters) for i in range(15))
+	# 		url = "url" + str(registerCounter)
+	# 		registerCounter += 1
+	# 		urls.append(url)
+	# 		password = "hello12345"
+	# 		register('test', url, password, 4, connection)
 	urls = []
+	for i in range(1000):
+		urls.append('url' + str(i))
 
-	for p in passwordCounts:
-		print("Testing search time with " + str(p) + ' passwords stored')
-		for _ in range(p):
-			# url = ''.join(random.choice(letters) for i in range(15))
-			url = "url" + str(registerCounter)
-			registerCounter += 1
-			urls.append(url)
-			password = "hello12345"
-			register('test', url, password, 4, connection)
-
-		print(testSearchTime('test', 5, urls))
+	print(testSearchTime('zbookbin', 10, urls))
 
 
 def test4():
@@ -159,6 +162,7 @@ def register(user, url, password, numChunks, threadConnection, i):
 
 def search(user, url):
 	userUrl = user + ' ' + url
+	print(user, userUrl)
 	result = connection.search(user, userUrl)
 	return result
 

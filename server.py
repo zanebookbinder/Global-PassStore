@@ -496,7 +496,7 @@ def main():
 				url = 'url' + str(i)
 				userUrl = 'zbookbin ' + url
 				put(userUrl, chunk1)			
-				userPasswordMap[userUrl] = {'1':['3.98.96.39'], '2':['3.99.158.136']}
+				userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
 		if myPublicIP == '3.99.158.136':
 			letters = string.ascii_lowercase
@@ -508,7 +508,7 @@ def main():
 				url = 'url' + str(i)
 				userUrl = 'zbookbin ' + url
 				put(userUrl, chunk2)			
-				userPasswordMap[userUrl] = {'1':['3.98.96.39'], '2':['3.99.158.136']}
+				userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
