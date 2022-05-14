@@ -449,6 +449,25 @@ def updateMyCluster(myClusterName, message):
 	message()
 	return 0
 
+def testNPasswordsStored(n):
+	letters = string.ascii_lowercase
+	chunk1 = 'may1'
+	chunk2 = '4th'
+	if myPublicIP == '3.98.96.39':
+
+		for i in range(n):
+			url = 'url' + str(i)
+			userUrl = 'zbookbin ' + url + '1'
+			put(userUrl, chunk1)			
+			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
+
+	if myPublicIP == '3.99.158.136':
+		
+		for i in range(n):
+			url = 'url' + str(i)
+			userUrl = 'zbookbin ' + url + '2'
+			put(userUrl, chunk2)			
+			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
 def main():
 	global myPrivateIP
@@ -484,31 +503,6 @@ def main():
 				otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 
 		print("Connected to other hosts")
-
-
-		if myPublicIP == '3.98.96.39':
-			letters = string.ascii_lowercase
-			password = 'may14th'
-			chunk1 = 'may1'
-			chunk2 = '4th'
-			storageList = []
-			for i in range(1000000):
-				url = 'url' + str(i)
-				userUrl = 'zbookbin ' + url + '1'
-				put(userUrl, chunk1)			
-				userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
-
-		if myPublicIP == '3.99.158.136':
-			letters = string.ascii_lowercase
-			password = 'may14th'
-			chunk1 = 'may1'
-			chunk2 = '4th'
-			storageList = []
-			for i in range(1000000):
-				url = 'url' + str(i)
-				userUrl = 'zbookbin ' + url + '2'
-				put(userUrl, chunk2)			
-				userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 			server.register_introspection_functions()
