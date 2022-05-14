@@ -66,7 +66,8 @@ def test3():
 	for i in range(1000):
 		urls.append('url' + str(i))
 
-	print(testSearchTime('zbookbin', 10, urls))
+	for _ in range(3):
+		print(testSearchTime('zbookbin', 50, urls))
 
 
 def test4():
@@ -135,6 +136,7 @@ def testSearchTime(user, repetitions, urls):
 		search(user, url)
 	stop = time.perf_counter()
 
+	print("TOTAL: ", str(round(stop-start,3)))
 	return (stop - start) / repetitions
 
 def register(user, url, password, numChunks, threadConnection, i):
@@ -162,7 +164,6 @@ def register(user, url, password, numChunks, threadConnection, i):
 
 def search(user, url):
 	userUrl = user + ' ' + url
-	print(user, userUrl)
 	result = connection.search(user, userUrl)
 	return result
 

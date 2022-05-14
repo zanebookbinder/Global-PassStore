@@ -492,7 +492,7 @@ def main():
 			chunk1 = 'may1'
 			chunk2 = '4th'
 			storageList = []
-			for i in range(1000):
+			for i in range(1):
 				url = 'url' + str(i)
 				userUrl = 'zbookbin ' + url + '1'
 				put(userUrl, chunk1)			
@@ -504,7 +504,7 @@ def main():
 			chunk1 = 'may1'
 			chunk2 = '4th'
 			storageList = []
-			for i in range(1000):
+			for i in range(1):
 				url = 'url' + str(i)
 				userUrl = 'zbookbin ' + url + '2'
 				put(userUrl, chunk2)			
