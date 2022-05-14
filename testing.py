@@ -55,7 +55,6 @@ def test2():
 	for i, url in enumerate(lines[0:10]):
 		if i % 10 == 0:
 			print(str(i), url)
-		print(serverUrl)
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		register('zbookbin', url, 'mypassword5',2,threadConnection, i)
 	
