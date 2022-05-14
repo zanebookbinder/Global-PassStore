@@ -63,7 +63,7 @@ def test3():
 	# 		password = "hello12345"
 	# 		register('test', url, password, 4, connection)
 	urls = []
-	for i in range(1):
+	for i in range(100):
 		urls.append('url' + str(i))
 
 	for _ in range(3):
