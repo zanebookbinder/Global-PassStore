@@ -271,8 +271,8 @@ def addHosts(userSite, chunkStorageList):
 	"""
 	Update this node's userPasswordMap to include the new piece/server mappings.
 	@params:
-		userSite (str): combination of a username and website
-		chunkStorageList: updated mapping of which servers the chunks of this password are stored on.
+		userSite (str): username and website, separated with a space
+		chunkStorageList: updated list of tuples: (serverIP, pieceNumber)
 	"""
 	# NOTE: potential update - change map structure so that sites are their own dictionary nested
 	for hostToChunk in chunkStorageList:
