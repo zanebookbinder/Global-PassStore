@@ -543,6 +543,8 @@ def main():
 				# server.serve_forever()
 				server.handle_request()
 
+			exit(0)
+
 	except Exception:
 		print(traceback.format_exc())
 

@@ -52,7 +52,7 @@ def test2():
 		lines = [line.rstrip() for line in lines]
 		lines = [line for line in lines if not line == '']
 	
-	for i, url in enumerate(lines[0:10]):
+	for i, url in enumerate(lines):
 		if i % 10 == 0:
 			print(str(i), url)
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
@@ -61,8 +61,7 @@ def test2():
 	s = 'http://' + random.choice(hosts) + ':8062/'
 	print('shutting down', s)
 	killConnection = xmlrpc.client.ServerProxy(s)
-	# killConnection.kill()
-	killConnection.quit()
+	killConnection.kill()
 
 	failed = 0
 	for url in lines:
