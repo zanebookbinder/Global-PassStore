@@ -19,8 +19,7 @@ import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 from xmlrpc.server import SimpleXMLRPCServer
 from socketserver import ThreadingMixIn
-from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
-import sys
+from constants import hosts, portno, hostClusterMap, hostCountryMap
 import math
 import random
 import time
@@ -33,38 +32,6 @@ ids = {}
 
 for i, host in enumerate(hosts):
 	ids[host] = i
-
-americasHosts = ['35.172.235.46', '44.199.229.51', '3.22.185.101', '18.191.134.62', '13.57.194.105',
-'54.177.19.64', '34.222.143.244', '54.202.50.11', '3.99.158.136', '3.98.96.39', '15.228.252.96',
-'15.229.0.10']
-
-worldHosts = ['13.245.182.179', '13.246.6.180','18.166.176.112', '16.162.137.92', '108.136.118.131',
-'108.136.41.214', '13.233.255.217', '15.206.211.195','15.152.35.76', '13.208.42.124', '13.125.213.112',
-'52.79.85.82', '18.136.203.66', '54.251.84.92','3.104.66.60', '3.26.227.87', '18.183.60.155',
-'54.95.115.193', '3.122.191.72', '3.73.75.196','34.244.200.204', '3.250.224.218', '18.130.129.70',
-'13.40.95.197', '15.160.192.179', '15.160.153.56','35.180.109.137', '35.180.39.12', '13.48.137.111',
-'13.48.3.201', '15.185.175.128', '157.175.185.52']
-
-hostClusterMap = {
-	'americas': americasHosts,
-	'rest-of-world': worldHosts
-}
-
-hostCountryMap = {'35.172.235.46': 'Virginia', '44.199.229.51': 'Virginia',
-'3.22.185.101': 'Ohio','18.191.134.62': 'Ohio','13.57.194.105': 'California',
-'54.177.19.64': 'California','34.222.143.244': 'Oregon','54.202.50.11': 'Oregon',
-'13.245.182.179': 'Cape Town','13.246.6.180': 'Cape Town','18.166.176.112': 'Hong Kong',
-'16.162.137.92': 'Hong Kong','108.136.118.131': 'Jakarta','108.136.41.214': 'Jakarta',
-'13.233.255.217': 'Mumbai','15.206.211.195': 'Mumbai','15.152.35.76': 'Osaka',
-'13.208.42.124': 'Osaka','13.125.213.112': 'Seoul','52.79.85.82': 'Seoul',
-'18.136.203.66': 'Singapore','54.251.84.92': 'Singapore','3.104.66.60': 'Sydney',
-'3.26.227.87': 'Sydney','18.183.60.155': 'Tokyo','54.95.115.193': 'Tokyo',
-'3.99.158.136': 'Canada','3.98.96.39': 'Canada','3.122.191.72': 'Frankfurt',
-'3.73.75.196': 'Frankfurt','34.244.200.204': 'Ireland','3.250.224.218': 'Ireland',
-'18.130.129.70': 'London','13.40.95.197': 'London','15.160.192.179': 'Milan',
-'15.160.153.56': 'Milan','35.180.109.137': 'Paris','35.180.39.12': 'Paris',
-'13.48.137.111': 'Stockholm','13.48.3.201': 'Stockholm','15.185.175.128': 'Bahrain',
-'157.175.185.52': 'Bahrain','15.228.252.96': 'Sao Paulo','15.229.0.10': 'Sao Paulo'}
 
 otherHosts = hosts.copy()
 
@@ -507,16 +474,6 @@ def main():
 		print("my port num: ", portno)
 
 		otherHosts.remove(myPublicIP)
-
-		# curious if this works without the call to sleep()
-		# time.sleep(3) # I think we should make this longer since it'll only happen on startup
-
-		# for IPaddr in hosts:
-		# 	if IPaddr != myPublicIP:
-		# 		fullHostname = f'http://{IPaddr}:{portno}/'
-		# 		otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
-
-		print("Connected to other hosts")
 
 		active = True
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
