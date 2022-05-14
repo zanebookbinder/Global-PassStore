@@ -12,23 +12,23 @@ from concurrent.futures.process import ProcessPoolExecutor
 connection = None
 letters = string.ascii_lowercase
 serverUrl = 'http://3.98.96.39:8062/'
-registerCounter = 0
+registerCounter = 1
 
 def main():
 	global connection, serverUrl
 
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
-	# test1()
-	# test4()
+	test1()
+	# test2()
 	# test3()
-	test2()
+	# test4()
 
 def test1():
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	threadCounts = [1, 5, 10, 20, 50]
-	# threadCounts = [50]
+	# threadCounts = [1, 5, 10, 20, 50]
+	threadCounts = [20]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
@@ -37,7 +37,7 @@ def test1():
 		threads = []
 		for i in range(t):
 			threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-			threads.append([testRegisterTime, 'zbookbin', 2, 4, i, threadConnection])
+			threads.append([testRegisterTime, 'zbookbin', 2, 4])
 
 		runThreads(threads)
 		stop = time.perf_counter()
@@ -56,7 +56,7 @@ def test2():
 		if i % 10 == 0:
 			print(str(i), url)
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-		register('zbookbin', url, 'mypassword5',2,threadConnection, i)
+		register('zbookbin', url, 'mypassword5', 2)
 	
 	s = 'http://' + random.choice(hosts) + ':8062/'
 	print('shutting down', s)
@@ -97,7 +97,7 @@ def test4():
 	for c in chunkCounts:
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		print("testing average registration time with " + str(c) + " chunks")
-		print(testRegisterTime('zbookbin', 2, c, 0, threadConnection))
+		print(testRegisterTime('zbookbin', 2, c))
 
 def runThreads(routines):
 	""" Takes in a list of 'routines', which should be structured as a list
@@ -115,7 +115,7 @@ def runThreads(routines):
 	for t in threads:
 		t.join()
 
-def testRegisterTime(user, repetitions, numChunks, i, threadConnection):
+def testRegisterTime(user, repetitions, numChunks):
 	global registerCounter
 	password = "hello12345"
 
@@ -124,7 +124,7 @@ def testRegisterTime(user, repetitions, numChunks, i, threadConnection):
 		# print(q)
 		url = 'url' + str(registerCounter)
 		registerCounter += 1
-		register(user, url, password, numChunks, threadConnection, i)
+		register(user, url, password, numChunks)
 	stop = time.perf_counter()
 
 	return round((stop - start) / repetitions, 3)
@@ -140,7 +140,7 @@ def testSearchTime(user, repetitions, urls):
 	print("TOTAL: ", str(round(stop-start,3)))
 	return (stop - start) / repetitions
 
-def register(user, url, password, numChunks, threadConnection, i):
+def register(user, url, password, numChunks):
 	start = time.perf_counter()
 
 	if len(password) < numChunks:

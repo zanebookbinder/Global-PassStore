@@ -110,10 +110,10 @@ def register(username, key, val, numChunks=4):
 	print(f'Attemtping to store password for key: {key} to local cluster')
 	localChunkStorageList = storeChunks(otherNodesInCluster, key, chunks)
 
-	print(f'Attemtping to replicate password for key: {key} to other cluster: {replicationCluster}')
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
 	replicationCluster = random.choice(list(otherClusters))
+	print(f'Attemtping to replicate password for key: {key} to other cluster: {replicationCluster}')
 	replicationNodes = otherClusters[replicationCluster]
 	replicationChunkStorageList = storeChunks(replicationNodes, key, chunks)
 
