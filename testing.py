@@ -56,7 +56,7 @@ def test2():
 		if i % 10 == 0:
 			print(str(i), url)
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-		register('zbookbin', url, 'mypassword5','2',threadConnection, i)
+		register('zbookbin', url, 'mypassword5',2,threadConnection, i)
 
 	killConnection = xmlrpc.client.ServerProxy('http://' + random.choice(hosts) + ':8062/')
 	killConnection.kill()
@@ -72,11 +72,6 @@ def test2():
 			print(result)
 
 	print('failed searches (of 100): ' + str(failed))
-
-
-def search(user, url):
-
-
 
 def test3():
 	print("Test 3: Number of passwords stored in GPS vs. search time")
