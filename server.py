@@ -173,6 +173,37 @@ def storeChunks(storageServers, key, chunks):
 	return chunkStorageList
 
 
+# user = id + site, host = machine hostname, pieceNum = password piece number
+# REMOTE method, makes outgoing RPC calls to other servers
+def propagate(user, chunkStorageList, hosts):
+	"""
+	Informs other hosts of updated password chunk mapping to servers.
+	Runs in threads, where each thread will propagate the userPWmap
+	by calling a remote server's addHosts() function. 
+	"""
+
+	addHosts(user, chunkStorageList)
+
+	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
+	for ip in hosts:
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		connection.addHosts(user, chunkStorageList)
+
+	# num_threads = 4
+	# hosts_split = split_evenly(hosts, num_threads)
+	# propagateOps = []
+	# for i in range(num_threads):
+	# 	propagateOps.append([propagateHelper, user, hosts_split[i], chunkStorageList])
+
+	# runThreads(propagateOps)
+
+def propagateHelper(user, ipList, chunkStorageList):
+	print(f'running addHosts on ip {ipList}')
+	for ip in ipList:
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		connection.addHosts(user, chunkStorageList)
+		del connection
+
 # LOCAL helper method 
 def split_evenly(a, n):
 	"""
@@ -301,40 +332,6 @@ def addHosts(userSite, chunkStorageList):
 			# associate the password piece number with the server host node that it is sto
 			userPasswordMap[userSite] = {pieceNum: [hostAddr]}
 
-# user = id + site, host = machine hostname, pieceNum = password piece number
-# REMOTE method, makes outgoing RPC calls to other servers
-def propagate(user, chunkStorageList, hosts):
-	"""
-	Informs other hosts of updated password chunk mapping to servers.
-	Runs in threads, where each thread will propagate the userPWmap
-	by calling a remote server's addHosts() function. 
-	"""
-
-	addHosts(user, chunkStorageList)
-
-	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
-	# f = lambda user, chunkStorageList, conn: conn.addHosts(user, chunkStorageList)
-	for ip in hosts:
-		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		connection.addHosts(user, chunkStorageList)
-		# thread = threading.Thread(target=f, args=(user, chunkStorageList, connection))
-		# thread.start()
-		# connection.addHosts(user, chunkStorageList)
-
-	# num_threads = 4
-	# hosts_split = split_evenly(hosts, num_threads)
-	# propagateOps = []
-	# for i in range(num_threads):
-	# 	propagateOps.append([propagateHelper, user, hosts_split[i], chunkStorageList])
-
-	# runThreads(propagateOps)
-
-def propagateHelper(user, ipList, chunkStorageList):
-	print(f'running addHosts on ip {ipList}')
-	for ip in ipList:
-		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		connection.addHosts(user, chunkStorageList)
-		del connection
 
 def getPrivateIP():
 	global myPrivateIP

@@ -12,7 +12,6 @@ from concurrent.futures.process import ProcessPoolExecutor
 connection = None
 letters = string.ascii_lowercase
 serverUrl = ''
-registerCounter = 1
 
 def main():
 	global connection, serverUrl
@@ -20,17 +19,16 @@ def main():
 
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
-	test1()
+	# test1()
 	# test2()
 	# test3()
-	# test4()
+	test4()
 
 def test1():
 	global registerCounter
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	# threadCounts = [1, 5, 10, 20, 50]
-	threadCounts = [1, 3, 5, 10]
+	threadCounts = [1, 5, 10, 20]
 	repititions = 5
 
 	for t in threadCounts:
@@ -43,10 +41,11 @@ def test1():
 		start = time.perf_counter()
 		runThreads(threads)
 		stop = time.perf_counter()
-		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round((stop-start), 3)))
+		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round((stop-start) / repititions, 3)))
 	
 	
-	print(f'We should now have {registerCounter - 1} passwords registered. how many do we have?')
+	totalPW = sum(threadCounts) * repititions
+	print(f'We should now have {totalPW} passwords registered. how many do we have?')
 	newConn = xmlrpc.client.ServerProxy(urlFromIp('3.99.158.136'))
 	print(newConn.getUserPasswordMapLength())
 
@@ -123,14 +122,12 @@ def runThreads(routines):
 		t.join()
 
 def testRegisterTime(user, repetitions, numChunks):
-	global registerCounter
 	password = "hello12345"
 
 	start = time.perf_counter()
 	for q in range(repetitions):
-		url = 'url' + str(registerCounter)
-		print(f'registerint {url}, repitition {q}')
-		registerCounter += 1
+		url = ''.join(random.choice(letters) for i in range(5)) + f'-t{threading.get_ident()}'
+		print(f'registering {url}, repitition {q}')
 		register(user, url, password, numChunks)
 	stop = time.perf_counter()
 
