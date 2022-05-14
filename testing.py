@@ -55,13 +55,15 @@ def test2():
 	for i, url in enumerate(lines[0:10]):
 		if i % 10 == 0:
 			print(str(i), url)
+		print(serverUrl)
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		register('zbookbin', url, 'mypassword5',2,threadConnection, i)
 	
 	s = 'http://' + random.choice(hosts) + ':8062/'
 	print('shutting down', s)
 	killConnection = xmlrpc.client.ServerProxy(s)
-	killConnection.kill()
+	# killConnection.kill()
+	killConnection.quit()
 
 	failed = 0
 	for url in lines:

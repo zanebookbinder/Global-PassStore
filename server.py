@@ -515,8 +515,8 @@ def main():
 				exit(0)
 
 			def quit(self):
-        		self._BaseServer__shutdown_request = True
-       			exit(0)
+				self._BaseServer__shutdown_request = True
+				exit(0)
 
 			server.register_introspection_functions()
 			server.register_function(register)
