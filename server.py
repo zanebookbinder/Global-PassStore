@@ -514,6 +514,10 @@ def main():
 				server.shutdown()
 				exit(0)
 
+			def quit(self):
+        		self._BaseServer__shutdown_request = True
+       			exit(0)
+
 			server.register_introspection_functions()
 			server.register_function(register)
 			server.register_function(search)
@@ -529,6 +533,8 @@ def main():
 			server.register_function(deletePasswordData)
 			server.register_function(ping)
 			server.register_function(kill)
+			server.register_function(quit)
+
 			
 			print('about to serve forever')
 			server.serve_forever()

@@ -47,12 +47,12 @@ def test1(connection):
 def test2():
 	print("Test 2: Node failures vs percentage of successful searches")
 
-	with open('new.txt') as file:
+	with open('websites.txt') as file:
 		lines = file.readlines()
 		lines = [line.rstrip() for line in lines]
 		lines = [line for line in lines if not line == '']
 	
-	for i, url in enumerate(lines):
+	for i, url in enumerate(lines[0:10]):
 		if i % 10 == 0:
 			print(str(i), url)
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
