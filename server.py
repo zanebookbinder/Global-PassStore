@@ -507,16 +507,20 @@ def main():
 
 		print("Connected to other hosts")
 
+		active = True
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 
 			def kill():
 				print('Killing server now. Goodbye!')
-				server.shutdown()
-				exit(0)
+				active = False
+				# server.shutdown()
+				# exit(0)
+				return 1
 
-			def quit():
-				server._BaseServer__shutdown_request = True
-				exit(0)
+			# def quit():
+			# 	server._BaseServer__shutdown_request = True
+			# 	server.shutdown()
+			# 	exit(0)
 
 			server.register_introspection_functions()
 			server.register_function(register)
@@ -533,11 +537,11 @@ def main():
 			server.register_function(deletePasswordData)
 			server.register_function(ping)
 			server.register_function(kill)
-			server.register_function(quit)
-
 			
 			print('about to serve forever')
-			server.serve_forever()
+			while(active):
+				# server.serve_forever()
+				server.handle_request()
 
 	except Exception:
 		print(traceback.format_exc())
