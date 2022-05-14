@@ -494,7 +494,7 @@ def main():
 			storageList = []
 			for i in range(1000):
 				url = 'url' + str(i)
-				userUrl = 'zbookbin' + url
+				userUrl = 'zbookbin ' + url
 				put(userUrl, chunk1)			
 				userPasswordMap[userUrl] = {'1':['3.98.96.39'], '2':['3.99.158.136']}
 
@@ -506,7 +506,7 @@ def main():
 			storageList = []
 			for i in range(1000):
 				url = 'url' + str(i)
-				userUrl = 'zbookbin' + url
+				userUrl = 'zbookbin ' + url
 				put(userUrl, chunk2)			
 				userPasswordMap[userUrl] = {'1':['3.98.96.39'], '2':['3.99.158.136']}
 

@@ -42,6 +42,10 @@ def main():
 				break
 			if len(parse) == 1 and (parse[0] == 'quit' or parse[0] == 'q'):
 				exit(0)
+			if len(parse) == 1 and parse[0] == 'g':
+				print(connection.getLocalPasswordData())
+				print('\n')
+				print(connection.getUserPasswordMap())
 			if len(parse) < 2:
 				print("Must include correct arguments starting with 'register', 'search', or 'update\'")
 				continue
