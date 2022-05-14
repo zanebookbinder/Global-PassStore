@@ -305,11 +305,11 @@ def propagate(user, chunkStorageList, hosts):
 	Informs other hosts of updated password chunk mapping to servers
 	"""
 
-	print(f'running propagate for user: {user}, propagating to hosts: {hosts}')
 	addHosts(user, chunkStorageList)
 
+	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
 	for ip in hosts:
-		connection = xmlrpc.client.ServerProxy(urlFromIp(host))
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		connection.addHosts(user, chunkStorageList)
 	# num_threads = 4
 	# hosts_split = split_evenly(hosts, num_threads)
@@ -320,10 +320,10 @@ def propagate(user, chunkStorageList, hosts):
 
 	# runThreads(propagateOps)
 
-def propagateThread(user, hostsList, chunkStorageList):
-	print('propogating to new hostsList')
-	for ip in hostsList:
-		otherServers[ip].addHosts(user, chunkStorageList)
+# def propagateThread(user, hostsList, chunkStorageList):
+# 	print('propogating to new hostsList')
+# 	for ip in hostsList:
+# 		otherServers[ip].addHosts(user, chunkStorageList)
 
 def getPrivateIP():
 	global myPrivateIP
