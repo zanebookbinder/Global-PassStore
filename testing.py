@@ -19,13 +19,15 @@ def main():
 
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
-	test1(connection)
+	# test1(connection)
+	# test4()
+	test3()
 
 def test1(connection):
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	# threadCounts = [1, 5, 10, 20, 50]
-	threadCounts = [50]
+	threadCounts = [1, 5, 10, 20, 50]
+	# threadCounts = [50]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
@@ -68,10 +70,10 @@ def test4():
 	print("Test 4: Password chunk count vs. registration time")
 
 	chunkCounts = [2, 3, 4, 5, 6, 7, 8, 9, 10]
-
 	for c in chunkCounts:
+		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		print("testing average registration time with " + str(c) + " chunks")
-		print(testRegisterTime('zbookbin', 5, c, connection))
+		print(testRegisterTime('zbookbin', 2, c, 0, threadConnection))
 
 
 # register 5 passwords with either of these chunk Counts and find the average time
@@ -115,7 +117,7 @@ def testRegisterTime(user, repetitions, numChunks, i, threadConnection):
 
 	start = time.perf_counter()
 	for q in range(repetitions):
-		print(q)
+		# print(q)
 		url = ''.join(random.choice(letters) for i in range(15))
 		register(user, url, password, numChunks, threadConnection, i)
 	stop = time.perf_counter()
@@ -143,12 +145,12 @@ def register(user, url, password, numChunks, threadConnection, i):
 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 	# myConnection = xmlrpc.client.ServerProxy("http://" + random.choice(hosts) + ":8062/")
 
-	print("Register:", user, url, password, numChunks, threadConnection)
+	# print("Register:", user, url, password, numChunks, threadConnection)
 
 
 
 	storedLocations = threadConnection.register(user, userUrl, password, numChunks)
-	print("Done with register:", user, url, password, numChunks, threadConnection, storedLocations)
+	# print("Done with register:", user, url, password, numChunks, threadConnection, storedLocations)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
