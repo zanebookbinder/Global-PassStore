@@ -52,24 +52,31 @@ def test2():
 		lines = [line.rstrip() for line in lines]
 		lines = [line for line in lines if not line == '']
 	
-	# for i, url in enumerate(lines):
-	# 	if i % 10 == 0:
-	# 		print(str(i), url)
-	# 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-	# 	register('zbookbin', url, 'mypassword5',2,threadConnection, i)
-
-	killConnection = xmlrpc.client.ServerProxy('http://' + random.choice(hosts) + ':8062/')
+	for i, url in enumerate(lines):
+		if i % 10 == 0:
+			print(str(i), url)
+		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
+		register('zbookbin', url, 'mypassword5',2,threadConnection, i)
+	
+	s = 'http://' + random.choice(hosts) + ':8062/'
+	print('shutting down', s)
+	killConnection = xmlrpc.client.ServerProxy(s)
 	killConnection.kill()
 
 	failed = 0
 	for url in lines:
-		result = search('zbookbin', url)
-		if type(result) != str:
+		try:
+			result = search('zbookbin', url)
+			if type(result) != str:
+				failed+=1
+				print(result)
+			elif result != 'mypassword5':
+				failed+=1
+				print(result)
+		except:
+			print('exception')
 			failed+=1
-			print(result)
-		elif result != 'mypassword5':
-			failed+=1
-			print(result)
+
 
 	print('failed searches (of 100): ' + str(failed))
 

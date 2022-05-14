@@ -249,18 +249,21 @@ def search(username, key):
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
 				# connection = otherServers[hostAddrs[hostAddr]]
-				connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + str(portno) + '/')
-				lookupResult = connection.lookup(key + str(pieceNum))
-				if lookupResult != -1:
-					print("found password piece on other server host")
-					pieces[pieceNum-1] = lookupResult
-					foundPiece = True
-				else:
-					print(f'expected pieceNum {pieceNum} on {hostAddrs[hostAddr]} but no password piece was found!!!')
+				try:
+					connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + str(portno) + '/')
+					lookupResult = connection.lookup(key + str(pieceNum))
+					if lookupResult != -1:
+						print("found password piece on other server host")
+						pieces[pieceNum-1] = lookupResult
+						foundPiece = True
+					else:
+						print(f'expected pieceNum {pieceNum} on {hostAddrs[hostAddr]} but no password piece was found!!!')
+				except:
+					print('server' + hostAddrs[hostAddr] + ' unavailable')
 
 			hostAddr += 1
 
-	return getUserPasswordMap() + "\n"+  str(len(list(userPasswordMap.keys()))) + '\n' + ''.join(pieces).strip()
+	return ''.join(pieces).strip()
 
 	# finalPassword = ''
 	# for i in range(1,3):
