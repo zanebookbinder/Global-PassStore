@@ -279,6 +279,7 @@ def addHosts(userSite, chunkStorageList):
 		userSite (str): username and website, separated with a space
 		chunkStorageList: updated list of tuples: (serverIP, pieceNumber)
 	"""
+	print(f'running addHosts locally, with key {userSite} and chunk list {chunkStorageList}')
 	# NOTE: potential update - change map structure so that sites are their own dictionary nested
 	for hostToChunk in chunkStorageList:
 		hostAddr = hostToChunk[0]
