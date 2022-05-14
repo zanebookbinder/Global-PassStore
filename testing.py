@@ -11,11 +11,12 @@ from concurrent.futures.process import ProcessPoolExecutor
 
 connection = None
 letters = string.ascii_lowercase
-serverUrl = 'http://3.98.96.39:' + str(portno)
+serverUrl = ''
 registerCounter = 1
 
 def main():
 	global connection, serverUrl
+	serverUrl = urlFromIp('3.98.96.39')
 
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
@@ -57,7 +58,7 @@ def test2():
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		register('zbookbin', url, 'mypassword5', 2)
 	
-	s = 'http://' + random.choice(hosts) + ':8062/'
+	s = urlFromIp(random.choice(hosts))
 	print('shutting down', s)
 	killConnection = xmlrpc.client.ServerProxy(s)
 	killConnection.kill()

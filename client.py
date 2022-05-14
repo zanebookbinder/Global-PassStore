@@ -24,7 +24,6 @@ def main():
 
 	serverUrl = urlFromIp(myServer)
 	connection = xmlrpc.client.ServerProxy(serverUrl)
-	# connection = xmlrpc.client.ServerProxy('http://3.98.96.39:8062/')
 
 	while(True):
 		user = input("\nPlease enter your username to login: ")
