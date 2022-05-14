@@ -25,8 +25,7 @@ import random
 import time
 import threading
 
-class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
-	pass
+class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer): pass
 
 ids = {}
 
@@ -88,10 +87,6 @@ def register(username, key, val, numChunks=4):
 		value: password to store
 	"""
 
-	global threadCount
-
-	print('in server register function with username and key: ', username, key)
-
 	if numChunks > len(val):
 		print("Too few chunks for this length password!")
 		return "Not enough chunks for this length password"
@@ -107,33 +102,43 @@ def register(username, key, val, numChunks=4):
 	chunks = split_evenly(val, numChunks)
 	chunkStorageList = []
 	
-	# list of servers that chunks can be stored on
-	shuffledServerAddrs = list(otherServers.keys())
 
-	print("trying to split up password for " + key + " amongst other hosts")
+	otherNodesInCluster = hostClusterMap[myCluster].copy()
+	otherNodesInCluster.remove(myPublicIP)
+
+	print(f'Attemtping to store password for key: {key} to local cluster')
+	localChunkStorageList = storeChunks(otherNodesInCluster, key, chunks)
+
+	otherClusters = hostClusterMap.copy()
+	otherClusters.pop(myCluster)
+	replicationCluster = random.choice(list(otherClusters))
+	replicationNodes = otherClusters[replicationCluster]
+
+	print(f'Attemtping to replicate password for key: {key} to other cluster: {replicationCluster}')
+	replicationChunkStorageList = storeChunks(replicationNodes, key, chunks)
+	# list of servers that chunks can be stored on
+	# shuffledServerAddrs = list(otherServers.keys())
+
 	# shuffling through the other server connections and splitting up the current password 
 	# amongst those servers, and propagating the update to each server as well
-	storedLocations, newShuffledServerAddrs = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks)
+	# storedLocations, newShuffledServerAddrs = storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks)
 	# newShuffledServerAddrs stores the list of hosts that don't already have a piece of the passsword
 
-	print("redistributing password for key " + key + " for replication")
-	replicationStoredLocations, newShuffledServerAddrs = storeChunks(newShuffledServerAddrs, key, chunkStorageList, chunks)
 	 # stored locations contains the places the password is stored
 
 	# propagate message out to nodes in my cluster
 	print(f"Propagating key " + key + " to other nodes in my cluster: {myCluster}")
-	otherHostsInCluster = hostClusterMap[myCluster].copy()
-	otherHostsInCluster.remove(myPublicIP)
 
-	propagate(key, chunkStorageList, otherHostsInCluster)
+	chunkStorageList = localChunkStorageList + replicationChunkStorageList
+	propagate(key, chunkStorageList, otherNodesInCluster)
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
 
-	newThread = threading.Thread(target=replicate, args=(chunkStorageList, key))
+	newThread = threading.Thread(target=propagateToOtherClusters, args=(chunkStorageList, key))
 	newThread.start()
 	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
-	return replicationStoredLocations
+	return [hostCountryMap[host] for host, _ in replicationChunkStorageList]
 
-def replicate(chunkStorageList, key):
+def propagateToOtherClusters(chunkStorageList, key):
 	threads = []
 	
 	otherClusters = hostClusterMap.copy()
@@ -156,27 +161,23 @@ def replicate(chunkStorageList, key):
 	print("password for key " + key + " has been distributed twice. register job complete!")
 	return
 
-def storeChunks(shuffledServerAddrs, key, chunkStorageList, chunks):
+def storeChunks(storageServers, key, chunks):
 	"""
 	store 
 	"""
 	numChunks = len(chunks)
-	newShuffledServerAddrs = shuffledServerAddrs
-	storedLocations = []
-	randomHosts = random.sample(shuffledServerAddrs, numChunks)
+	chunkStorageList = []
+	randomHosts = random.sample(storageServers, numChunks)
 
 	chunkCount = 1
 	for randomHost in randomHosts:
-		# connection = otherServers[randomHost]
 		connection = xmlrpc.client.ServerProxy('http://' + randomHost + ':' + str(portno) + '/')
 		print("current connection for key " + key + " : id=", ids[randomHost])
 		connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([randomHost, chunkCount])
-		storedLocations.append(hostCountryMap[randomHost])
-		newShuffledServerAddrs.remove(randomHost)
 		chunkCount+=1
 
-	return storedLocations, newShuffledServerAddrs
+	return chunkStorageList
 
 
 # LOCAL helper method 
@@ -452,9 +453,6 @@ def main():
 	global myPrivateIP
 	global myPublicIP
 	global myCluster
-	global threadCount
-
-	threadCount = 0
 
 	try:
 		sys.stdout = open('outputServer.log', 'w') # print statements go to this file

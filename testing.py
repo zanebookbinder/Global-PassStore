@@ -12,6 +12,7 @@ from concurrent.futures.process import ProcessPoolExecutor
 connection = None
 letters = string.ascii_lowercase
 serverUrl = 'http://3.98.96.39:8062/'
+registerCounter = 0
 
 def main():
 	global connection, serverUrl
@@ -23,8 +24,8 @@ def main():
 def test1(connection):
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	threadCounts = [1, 5, 10, 20, 50]
-	# threadCounts = [50]
+	# threadCounts = [1, 5, 10, 20, 50]
+	threadCounts = [50]
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
@@ -53,12 +54,14 @@ def test3():
 	for p in passwordCounts:
 		print("Testing search time with " + str(p) + ' passwords stored')
 		for _ in range(p):
-			url = ''.join(random.choice(letters) for i in range(15))
+			# url = ''.join(random.choice(letters) for i in range(15))
+			url = "url" + str(registerCounter)
+			registerCounter += 1
 			urls.append(url)
 			password = "hello12345"
-			register('zbookbin', url, password, 4, connection)
+			register('test', url, password, 4, connection)
 
-		print(testSearchTime('zbookbin', 5, urls))
+		print(testSearchTime('test', 5, urls))
 
 
 def test4():
