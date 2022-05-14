@@ -309,25 +309,26 @@ def propagate(user, chunkStorageList, hosts):
 	addHosts(user, chunkStorageList)
 
 	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
-	f = lambda user, chunkStorageList, conn: conn.addHosts(user, chunkStorageList)
-	for ip in hosts:
-		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		thread = threading.Thread(target=f, args=(user, chunkStorageList, connection))
-		thread.start()
+	# f = lambda user, chunkStorageList, conn: conn.addHosts(user, chunkStorageList)
+	# for ip in hosts:
+		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		# thread = threading.Thread(target=f, args=(user, chunkStorageList, connection))
+		# thread.start()
 		# connection.addHosts(user, chunkStorageList)
-	# num_threads = 4
-	# hosts_split = split_evenly(hosts, num_threads)
-	# print('hosts_split:', hosts_split)
-	# propagateOps = []
-	# for i in range(num_threads):
-	# 	propagateOps.append([propagateThread, user, hosts_split[i], chunkStorageList])
+	num_threads = 4
+	hosts_split = split_evenly(hosts, num_threads)
+	print('hosts_split:', hosts_split)
+	propagateOps = []
+	for i in range(num_threads):
+		propagateOps.append([propagateThread, user, hosts_split[i], chunkStorageList])
 
-	# runThreads(propagateOps)
+	runThreads(propagateOps)
 
-# def propagateThread(user, hostsList, chunkStorageList):
-# 	print('propogating to new hostsList')
-# 	for ip in hostsList:
-# 		otherServers[ip].addHosts(user, chunkStorageList)
+def propagateThread(user, hostsList, chunkStorageList):
+	print('propogating to new hostsList')
+	for ip in hostsList:
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		connection.addHosts(user, chunkStorageList)
 
 def getPrivateIP():
 	global myPrivateIP
