@@ -134,20 +134,22 @@ def propagateToOtherClusters(chunkStorageList, key):
 	
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
-	for ipList in list(otherClusters.values()):
+	connections = []
+	for i, ipList in enumerate(list(otherClusters.values())):
 		# pick one node randomly in each other cluster
 		randNodeIP = random.choice(ipList)
 		randNodeCluster = getCluster(randNodeIP)
 		randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
 		randNodeOtherHosts.remove(randNodeIP)
 
-		newConnect = xmlrpc.client.ServerProxy('http://' + randNodeIP + ':' + portno + '/')
+		connections[i] = xmlrpc.client.ServerProxy(urlFromIp(randNodeIP))
 		
 		# tell that random other node to propagate update to its own cluster
-		threads.append([newConnect.propagate, key, chunkStorageList, randNodeOtherHosts])
+		threads.append([connections[i].propagate, key, chunkStorageList, randNodeOtherHosts])
 		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster about key " + key)
 
 	runThreads(threads)
+	del connections
 	
 	print("password for key " + key + " has been distributed twice. register job complete!")
 	return
@@ -238,10 +240,10 @@ def search(username, key):
 			else:
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
-				# connection = otherServers[hostAddrs[hostAddr]]
 				try:
 					connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + str(portno) + '/')
 					lookupResult = connection.lookup(key + str(pieceNum))
+					del connection
 					if lookupResult != -1:
 						print("found password piece on other server host")
 						pieces[pieceNum-1] = lookupResult
@@ -331,6 +333,7 @@ def propagateHelper(user, ipList, chunkStorageList):
 	for ip in ipList:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		connection.addHosts(user, chunkStorageList)
+		del connection
 
 def getPrivateIP():
 	global myPrivateIP
@@ -388,8 +391,10 @@ def delete(username, key):
 			else:
 				# find piece on other machine with RPC
 				print("password piece found remotely")
-				connection = otherServers[hostAddr]
+				# connection = otherServers[hostAddr]
+				connection = xmlrpc.client.ServerProxy(urlFromIp(hostAddr))
 				removeResult = connection.removePiece(key + str(pieceNum))
+				del connection
 
 	deletePropogation(username, key)
 
@@ -409,7 +414,6 @@ def deletePropogation(user, key):
 	print("sending deletion update to other server nodes")
 	num_threads = 4
 	hosts_split = split_evenly(hosts, num_threads)
-	print('hosts_split:', hosts_split)
 	deleteOps = []
 	for i in range(num_threads):
 		deleteOps.append([propagateDeletionThread, key, hosts_split[i]])
@@ -419,7 +423,9 @@ def deletePropogation(user, key):
 def propagateDeletionThread(key, hostsList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
-		otherServers[ip].deletePasswordData(key)
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		connection.deletePasswordData(key)
+		# otherServers[ip].deletePasswordData(key)
 
 def runThreads(routines):
 	""" Takes in a list of 'routines', which should be structured as a list
@@ -507,10 +513,10 @@ def main():
 		# curious if this works without the call to sleep()
 		# time.sleep(3) # I think we should make this longer since it'll only happen on startup
 
-		for IPaddr in hosts:
-			if IPaddr != myPublicIP:
-				fullHostname = f'http://{IPaddr}:{portno}/'
-				otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
+		# for IPaddr in hosts:
+		# 	if IPaddr != myPublicIP:
+		# 		fullHostname = f'http://{IPaddr}:{portno}/'
+		# 		otherServers[IPaddr] = xmlrpc.client.ServerProxy(fullHostname)
 
 		print("Connected to other hosts")
 
