@@ -312,7 +312,7 @@ def propagate(user, chunkStorageList, hosts):
 	f = lambda user, chunkStorageList, conn: conn.addHosts(user, chunkStorageList)
 	for ip in hosts:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		thread = threading.Thread(target=f, arguments=(user, chunkStorageList, connection))
+		thread = threading.Thread(target=f, args=(user, chunkStorageList, connection))
 		thread.start()
 		# connection.addHosts(user, chunkStorageList)
 	# num_threads = 4
