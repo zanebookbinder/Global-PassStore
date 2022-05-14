@@ -305,10 +305,9 @@ def propagate(user, chunkStorageList, hosts):
 	Informs other hosts of updated password chunk mapping to servers
 	"""
 
-	print(f'running propagate on server {ids[myPublicIP]}, user {user}')
+	print(f'running propagate for user: {user}, propagating to hosts: {hosts}')
 	addHosts(user, chunkStorageList)
 
-	print("sending update to other server nodes")
 	for ip in hosts:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(host))
 		connection.addHosts(user, chunkStorageList)
