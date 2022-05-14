@@ -469,11 +469,6 @@ def testNPasswordsStored(n):
 			put(userUrl, chunk2)			
 			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
-def kill():
-	print('Killing server now. Goodbye!')
-	server._BaseServer__shutdown_request = True
-	exit(0)
-
 def main():
 	global myPrivateIP
 	global myPublicIP
@@ -510,6 +505,12 @@ def main():
 		print("Connected to other hosts")
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
+
+			def kill():
+				print('Killing server now. Goodbye!')
+				server.shutdown()
+				exit(0)
+
 			server.register_introspection_functions()
 			server.register_function(register)
 			server.register_function(search)
