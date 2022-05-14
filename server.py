@@ -10,6 +10,7 @@ TODO:
 	5. Make update/register synchronized on one key
 """
 
+from ast import arguments
 import os
 import traceback
 import sys
@@ -308,9 +309,12 @@ def propagate(user, chunkStorageList, hosts):
 	addHosts(user, chunkStorageList)
 
 	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
+	f = lambda user, chunkStorageList, conn: conn.addHosts(user, chunkStorageList)
 	for ip in hosts:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		connection.addHosts(user, chunkStorageList)
+		thread = threading.Thread(target=f, arguments=(user, chunkStorageList, connection))
+		thread.start()
+		# connection.addHosts(user, chunkStorageList)
 	# num_threads = 4
 	# hosts_split = split_evenly(hosts, num_threads)
 	# print('hosts_split:', hosts_split)
