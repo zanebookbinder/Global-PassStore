@@ -29,8 +29,8 @@ def test1():
 	global registerCounter
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	threadCounts = [1, 5, 10, 20, 50]
-	# threadCounts = [4]
+	# threadCounts = [1, 5, 10, 20, 50]
+	threadCounts = [50]
 	repititions = 2
 
 	for t in threadCounts:

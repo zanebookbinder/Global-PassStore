@@ -303,7 +303,9 @@ def addHosts(userSite, chunkStorageList):
 # REMOTE method, makes outgoing RPC calls to other servers
 def propagate(user, chunkStorageList, hosts):
 	"""
-	Informs other hosts of updated password chunk mapping to servers
+	Informs other hosts of updated password chunk mapping to servers.
+	Runs in threads, where each thread will propagate the userPWmap
+	by calling a remote server's addHosts() function. 
 	"""
 
 	addHosts(user, chunkStorageList)
@@ -315,18 +317,18 @@ def propagate(user, chunkStorageList, hosts):
 		# thread = threading.Thread(target=f, args=(user, chunkStorageList, connection))
 		# thread.start()
 		# connection.addHosts(user, chunkStorageList)
+
 	num_threads = 4
 	hosts_split = split_evenly(hosts, num_threads)
-	print('hosts_split:', hosts_split)
 	propagateOps = []
 	for i in range(num_threads):
-		propagateOps.append([propagateThread, user, hosts_split[i], chunkStorageList])
+		propagateOps.append([propagateHelper, user, hosts_split[i], chunkStorageList])
 
 	runThreads(propagateOps)
 
-def propagateThread(user, hostsList, chunkStorageList):
-	print('propogating to new hostsList')
-	for ip in hostsList:
+def propagateHelper(user, ipList, chunkStorageList):
+	print(f'running addHosts on ip {ipList}')
+	for ip in ipList:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		connection.addHosts(user, chunkStorageList)
 
