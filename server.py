@@ -314,19 +314,20 @@ def propagate(user, chunkStorageList, hosts):
 
 	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
 	# f = lambda user, chunkStorageList, conn: conn.addHosts(user, chunkStorageList)
-	# for ip in hosts:
-		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+	for ip in hosts:
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		connection.addHosts(user, chunkStorageList)
 		# thread = threading.Thread(target=f, args=(user, chunkStorageList, connection))
 		# thread.start()
 		# connection.addHosts(user, chunkStorageList)
 
-	num_threads = 4
-	hosts_split = split_evenly(hosts, num_threads)
-	propagateOps = []
-	for i in range(num_threads):
-		propagateOps.append([propagateHelper, user, hosts_split[i], chunkStorageList])
+	# num_threads = 4
+	# hosts_split = split_evenly(hosts, num_threads)
+	# propagateOps = []
+	# for i in range(num_threads):
+	# 	propagateOps.append([propagateHelper, user, hosts_split[i], chunkStorageList])
 
-	runThreads(propagateOps)
+	# runThreads(propagateOps)
 
 def propagateHelper(user, ipList, chunkStorageList):
 	print(f'running addHosts on ip {ipList}')

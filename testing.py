@@ -30,7 +30,7 @@ def test1():
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
 	# threadCounts = [1, 5, 10, 20, 50]
-	threadCounts = [30]
+	threadCounts = [1, 3, 5, 10]
 	repititions = 5
 
 	for t in threadCounts:
@@ -43,7 +43,7 @@ def test1():
 		start = time.perf_counter()
 		runThreads(threads)
 		stop = time.perf_counter()
-		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round(stop-start, 3)))
+		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round((stop-start), 3)))
 	
 	
 	print(f'We should now have {registerCounter - 1} passwords registered. how many do we have?')
@@ -128,8 +128,8 @@ def testRegisterTime(user, repetitions, numChunks):
 
 	start = time.perf_counter()
 	for q in range(repetitions):
-		# print(q)
 		url = 'url' + str(registerCounter)
+		print(f'registerint {url}, repitition {q}')
 		registerCounter += 1
 		register(user, url, password, numChunks)
 	stop = time.perf_counter()
