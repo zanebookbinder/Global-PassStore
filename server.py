@@ -265,6 +265,9 @@ def search(username, key):
 def getUserPasswordMap():
 	return str(userPasswordMap)
 
+def getUserPasswordMapLength():
+	return str(len(list(userPasswordMap.keys())))
+
 def getLocalPasswordData():
 	return str(localPasswordData)
 
@@ -516,6 +519,7 @@ def main():
 			server.register_function(search)
 			server.register_function(put)
 			server.register_function(getUserPasswordMap)
+			server.register_function(getUserPasswordMapLength)
 			server.register_function(getLocalPasswordData)
 			server.register_function(addHosts)
 			server.register_function(propagate)

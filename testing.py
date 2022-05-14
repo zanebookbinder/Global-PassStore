@@ -11,7 +11,7 @@ from concurrent.futures.process import ProcessPoolExecutor
 
 connection = None
 letters = string.ascii_lowercase
-serverUrl = 'http://3.98.96.39:8062/'
+serverUrl = 'http://3.98.96.39:' + str(portno)
 registerCounter = 1
 
 def main():
@@ -32,13 +32,12 @@ def test1():
 
 	for t in threadCounts:
 		print("Testing with " + str(t) + " clients")
-		start = time.perf_counter()
 
 		threads = []
 		for i in range(t):
-			threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 			threads.append([testRegisterTime, 'zbookbin', 2, 4])
 
+		start = time.perf_counter()
 		runThreads(threads)
 		stop = time.perf_counter()
 		print("TIME FOR " + str(t) + " CLIENT IS: " + str(round(stop-start, 3)))
@@ -146,14 +145,9 @@ def register(user, url, password, numChunks):
 	if len(password) < numChunks:
 		return "Sorry! Passwords must be at least as long as numChunks"
 	userUrl = user + ' ' + url
-	
-
 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-	# myConnection = xmlrpc.client.ServerProxy("http://" + random.choice(hosts) + ":8062/")
 
-	print("Register:", user, url, password, numChunks)
-
-
+	print(f'Registering: user {user}, url {url}, password {password}, {numChunks} chunks')
 
 	storedLocations = threadConnection.register(user, userUrl, password, numChunks)
 	print("Done with register:", user, url, password, numChunks, storedLocations)
