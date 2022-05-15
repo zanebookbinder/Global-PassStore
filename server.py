@@ -71,7 +71,7 @@ def register(username, key, val, numChunks=4):
 	chunks = split_evenly(val, numChunks)
 	chunkStorageList = []
 	
-
+	print('start of register')
 	otherNodesInCluster = hostClusterMap[myCluster].copy()
 	otherNodesInCluster.remove(myPublicIP)
 
@@ -89,6 +89,7 @@ def register(username, key, val, numChunks=4):
 	chunkStorageList = localChunkStorageList + replicationChunkStorageList
 	propagate(key, chunkStorageList, otherNodesInCluster)
 	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
+	print('end of register')
 
 	globalPropagateThread = threading.Thread(target=propagateToOtherClusters, args=(chunkStorageList, key))
 	globalPropagateThread.start()
