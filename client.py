@@ -66,7 +66,7 @@ def main():
 
 		print("Thanks for logging in! Your username is " + user)
 		print("Executable commands:\n  ->register/r [url] [password]\n  ->search/s   [url]")
-		print("  ->update/u   [url] [password]\n  ->delete/d   [url]\n   ->chunk count/c   [num]\n ->logout/l\n  ->quit/q\n")
+		print("  ->update/u   [url] [password]\n  ->delete/d   [url]\n  ->chunk count/c    [num]\n  ->logout/l\n  ->quit/q\n")
 
 		while(True):
 			parse = input("Enter your command: ").split(' ')
@@ -112,14 +112,7 @@ def main():
 				result = update(user, url, password)
 				print(result)
 			elif command == 'chunk count' or command == 'c':
-				if url.isdigit():
-					if url < 11 and url > 1: 
-						chunkCount = url
-						print("Registration chunk count is updated to " + chunkCount)
-					else:
-						print("Chunk count must be between 2 and 10 (inclusive)")
-				else:
-					print("Chunk count must be a number")
+				updateChunkCount(url)
 
 def register(user, url, password):
 	global chunkCount
@@ -190,6 +183,17 @@ def selectCluster(region, hostClusterMap):
 	else:
 		print("Invalid cluster!")
 		return []
+
+def updateChunkCount(c):
+	global chunkCount
+	if c.isdigit():
+		if int(c) < 11 and int(c) > 1: 
+			chunkCount = int(c)
+			print("Registration chunk count is updated to " + str(chunkCount) + '\n')
+		else:
+			print("Chunk count must be between 2 and 10 (inclusive)")
+	else:
+		print("Chunk count must be a number")
 
 if __name__ == "__main__":
 	main()

@@ -1,7 +1,7 @@
 import xmlrpc.client
 import sys
 import time
-from constants import hosts, portno, americasHosts, worldHosts, hostClusterMap, hostCountryMap
+from constants import hosts, portno, hostClusterMap
 import random
 import string
 import threading
@@ -19,8 +19,10 @@ def main():
 
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
+
+
 	# test1()
-	test2()
+	# test2()
 	# test3()
 	# test4()
 
@@ -28,7 +30,7 @@ def test1():
 	global registerCounter
 	print("Test 1: num clients vs. register time") # should we do this on random servers or the same server?
 
-	threadCounts = [1, 5, 10, 20]
+	threadCounts = [1, 5, 10, 20, 50]
 	repititions = 5
 
 	for t in threadCounts:
