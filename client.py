@@ -112,10 +112,10 @@ def main():
 				result = update(user, url, password)
 				print(result)
 			elif command == 'chunk count' or command == 'c':
-				if url.isdigit()
+				if url.isdigit():
 					if url < 11 and url > 1: 
 						chunkCount = url
-						print("Registration chunk count is updated to " + )
+						print("Registration chunk count is updated to " + chunkCount)
 					else:
 						print("Chunk count must be between 2 and 10 (inclusive)")
 				else:

@@ -504,7 +504,7 @@ def main():
 		current_time = time.strftime("%H:%M:%S", t)
 		print("Running at:", current_time)
 
-		if sys.argv[1] == 'startup':
+		if len(sys.argv) > 1 and sys.argv[1] == 'startup':
 			startup()
 
 		myPublicIP = os.popen('curl -s ifconfig.me').readline()
