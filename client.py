@@ -7,6 +7,7 @@ import random
 # ALLOW CLIENT TO INPUT A FILENAME TO STORE PASSKEYS
 
 connection = None
+chunkCount = 4
 
 def main():
 	global connection
@@ -65,7 +66,7 @@ def main():
 
 		print("Thanks for logging in! Your username is " + user)
 		print("Executable commands:\n  ->register/r [url] [password]\n  ->search/s   [url]")
-		print("  ->update/u   [url] [password]\n  ->delete/d   [url]\n  ->logout/l\n  ->quit/q\n")
+		print("  ->update/u   [url] [password]\n  ->delete/d   [url]\n   ->chunk count/c   [num]\n ->logout/l\n  ->quit/q\n")
 
 		while(True):
 			parse = input("Enter your command: ").split(' ')
@@ -98,7 +99,6 @@ def main():
 				if len(parse) < 3:
 					print("Must include three arguments for a register operation\n")
 					continue
-
 				print("One second while we register your password around the globe...")
 				password = parse[2]
 				result = register(user, url, password)
@@ -111,16 +111,24 @@ def main():
 				password = parse[2]
 				result = update(user, url, password)
 				print(result)
+			elif command == 'chunk count' or command == 'c':
+				if url.isdigit()
+					if url < 11 and url > 1: 
+						chunkCount = url
+						print("Registration chunk count is updated to " + )
+					else:
+						print("Chunk count must be between 2 and 10 (inclusive)")
+				else:
+					print("Chunk count must be a number")
 
 def register(user, url, password):
+	global chunkCount
 	start = time.perf_counter()
 
-	numChunks = 4
-
-	if len(password) < numChunks:
-		return "Sorry! Passwords must be at least as long as numChunks"
+	if len(password) < chunkCount:
+		return "Sorry! Passwords must be at least as long as chunkCount"
 	userUrl = user + ' ' + url
-	storedLocations = connection.register(user, userUrl, password, numChunks)
+	storedLocations = connection.register(user, userUrl, password, chunkCount)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()
