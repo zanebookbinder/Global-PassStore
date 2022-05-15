@@ -39,6 +39,8 @@ localPasswordData = {}
 userPasswordMap = {}
 otherServers = {}
 
+serverActive = True
+
 myPrivateIP = myPublicIP = myCluster = ""
 
 def getCluster(ip):
@@ -450,10 +452,20 @@ def testNPasswordsStored(n):
 			put(userUrl, chunk2)			
 			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
+def kill():
+	global serverActive
+
+	print('Killing server now. Goodbye!')
+	serverActive = False
+	# server.shutdown()
+	# exit(0)
+	return 1
+
 def main():
 	global myPrivateIP
 	global myPublicIP
 	global myCluster
+	global serverActive
 
 	try:
 		sys.stdout = open('outputServer.log', 'w') # print statements go to this file
@@ -475,15 +487,7 @@ def main():
 
 		otherHosts.remove(myPublicIP)
 
-		active = True
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
-
-			def kill():
-				print('Killing server now. Goodbye!')
-				active = False
-				# server.shutdown()
-				# exit(0)
-				return 1
 
 			# def quit():
 			# 	server._BaseServer__shutdown_request = True
@@ -508,7 +512,7 @@ def main():
 			server.register_function(kill)
 			
 			print('about to serve forever')
-			while(active):
+			while(serverActive):
 				# server.serve_forever()
 				print("shutting down server")
 				server.handle_request()

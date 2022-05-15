@@ -42,7 +42,7 @@ hostCountryMap = {'35.172.235.46': 'Virginia', '44.199.229.51': 'Virginia',
 '13.48.137.111': 'Stockholm','13.48.3.201': 'Stockholm','15.185.175.128': 'Bahrain',
 '157.175.185.52': 'Bahrain','15.228.252.96': 'Sao Paulo','15.229.0.10': 'Sao Paulo'}
 
-portno = 8063
+portno = 8062
 
 def main():
     if sys.argv[1] == 'h':
