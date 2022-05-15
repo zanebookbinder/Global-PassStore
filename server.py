@@ -33,8 +33,6 @@ ids = {}
 for i, host in enumerate(hosts):
 	ids[host] = i
 
-otherHosts = hosts.copy()
-
 localPasswordData = {}
 userPasswordMap = {}
 otherServers = {}
@@ -519,8 +517,6 @@ def main():
 		print("my (public) IP addr: ", myPublicIP)
 		print("my (private) IP addr: ", myPrivateIP)
 		print("my port num: ", portno)
-
-		otherHosts.remove(myPublicIP)
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 
