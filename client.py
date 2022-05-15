@@ -25,8 +25,43 @@ def main():
 	serverUrl = urlFromIp(myServer)
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
+	
 	while(True):
-		user = input("\nPlease enter your username to login: ")
+		enteredValid = False
+		user = None
+
+		while not enteredValid:
+			option = input("\nEnter L if you want to login or C to create a new account: ")
+
+			if option == 'L':
+				loggedIn = False
+
+				while not loggedIn:
+					user = input("\nPlease enter your username: ")
+					masterPassword = input("\nPlease enter your GPS account password: ")
+					if search(user, 'GPSpassword') == masterPassword:
+						print("Success! You're logged in as " + user + '\n')
+						loggedIn = True
+						enteredValid = True
+					else:
+						print("Incorrect username password, please try again")
+					del masterPassword
+			elif option == 'C':
+				user = input("\nPlease enter your username: ")
+				if search(user, 'GPSpassword') != 'No record of key':
+					print('There is already an account with this password')
+				else:
+					masterPassword = input("\nPlease enter your new GPS account password: ")
+					result = register(user, 'GPSpassword', masterPassword)
+					del masterPassword
+
+					if 'Success!' in result:
+						print('Your GPS password is saved and you can now use it to login!\n')
+						enteredValid = True
+					else:
+						print('GPS password storage failed')
+			else:
+				print("Invalid command, please try again")
 
 		print("Thanks for logging in! Your username is " + user)
 		print("Executable commands:\n  ->register/r [url] [password]\n  ->search/s   [url]")
