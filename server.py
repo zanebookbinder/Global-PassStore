@@ -257,14 +257,6 @@ def search(username, key):
 
 	return ''.join(pieces).strip()
 
-	# finalPassword = ''
-	# for i in range(1,3):
-	# 	if i not in results:
-	# 		return -1
-	# 	finalPassword += results[i]
-
-	# return finalPassword
-
 def getUserPasswordMap():
 	return str(userPasswordMap)
 
@@ -410,27 +402,64 @@ def runThreads(routines):
 	for t in threads:
 		t.join()
 
-### Client Connection Methods ###
-
-def ping():
-	""" Simple ping method to time RPCs in order to figure out which server would be 
-		best suited to serve a client
-	"""
-	return
-
-def updateMyCluster(myClusterName, message):
-	""" Given a message such as a new client registration, this method will update all the 
-	nodes in its cluster of that new registration.
-	
-	"""
-	
-	message()
-	return 0
-
 def urlFromIp(ip):
 	""" Makes a full URL out of an IP address.
 	"""
 	return f'http://{ip}:{portno}/'
+
+def startup():
+	# 1. pick 10 nodes in each cluster, time connections to them
+	print('startup: making RPCs to 10 nodes in each cluster')
+	clusterTimeMap = dict.fromkeys(list(hostClusterMap.keys()), [])
+	for cluster, clusterHosts in hostClusterMap.items():
+		timingHosts = random.sample(clusterHosts, min(10, len(clusterHosts)))
+		for ip in timingHosts:
+			connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+			start = time.perf_counter()
+			connection.ping()
+			stop = time.perf_counter()
+			del connection
+			clusterTimeMap[cluster].append(stop - start)
+	
+	# 2. Pick the cluster with the shortest average time
+	print('startup: picking cluster with shortest rpc time')
+	minTime = float('inf')
+	bestCluster = 'americas'
+	for cluster, times in clusterTimeMap.items():
+		currTime = sum(times)/len(times)
+		if currTime < minTime:
+			minTime = currTime
+			bestCluster = cluster
+	
+	# 3. tell all other servers about new server
+	print(f'startup: picked cluster {bestCluster}, telling all servers to addNewHost')
+	for ip in hosts:
+		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
+		connection.addNewHost(myPublicIP, bestCluster)
+		del connection
+
+	print('startup successful')
+
+def removeHost(ip):
+	try:
+		hosts.remove(ip)
+		for clusterHosts in hostClusterMap.values():
+			if ip in clusterHosts:
+				clusterHosts.remove(ip)
+	except:
+		print(f'trying to remove ip {ip}, but it was already not in list of hosts.')
+
+def addNewHost(host, cluster):
+	hosts.append(host)
+	hostClusterMap[cluster].append(host)
+
+### Client Connection Methods ###
+
+def ping(ret=None):
+	""" Simple ping method to time RPCs in order to figure out which server would be 
+		best suited to serve a client
+	"""
+	return
 
 def testNPasswordsStored(n):
 	letters = string.ascii_lowercase
@@ -475,6 +504,9 @@ def main():
 		current_time = time.strftime("%H:%M:%S", t)
 		print("Running at:", current_time)
 
+		if sys.argv[1] == 'startup':
+			startup()
+
 		myPublicIP = os.popen('curl -s ifconfig.me').readline()
 		myPrivateIP = getPrivateIP()
 		myCluster = getCluster(myPublicIP)
@@ -510,6 +542,7 @@ def main():
 			server.register_function(deletePasswordData)
 			server.register_function(ping)
 			server.register_function(kill)
+			server.register_function(addNewHost)
 			
 			print('about to serve forever')
 			while(serverActive):
