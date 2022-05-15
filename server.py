@@ -499,8 +499,7 @@ def newConnection(ip):
 
 def safeRPC(ip, fn, *args):
 	try:
-		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		result = connection.fn(*args)
+		result = fn(*args)
 		del connection
 		return result
 	except ConnectionRefusedError:
