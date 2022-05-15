@@ -409,6 +409,7 @@ def urlFromIp(ip):
 
 def startup():
 	global myPublicIP
+	global hosts
 	# 1. pick 10 nodes in each cluster, time connections to them
 	print('startup: making RPCs to 10 nodes in each cluster')
 	clusterTimeMap = dict.fromkeys(list(hostClusterMap.keys()), [])
@@ -440,6 +441,7 @@ def startup():
 		del connection
 
 	hosts.append(myPublicIP)
+	print('my ip in hosts? ', myPublicIP in hosts)
 	print('startup successful')
 
 def removeHost(ip):
