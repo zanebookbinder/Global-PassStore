@@ -1,13 +1,12 @@
 #!/bin/bash
 
 HOSTS=$(python3 constants.py h)
-PORTNO=$(python3 constants.py p)
 
 IDX=0
 for HOSTNAME in ${HOSTS} ; do 
     # scp -i ~/.ssh/$USER-keypair ~/project-4---final-project-zane-danny-ahmed/server.py $USER@${HOSTNAME}:~/project-4---final-project-zane-danny-ahmed/server.py
     # ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && python3 server.py 8061 &" &
-    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 server.py ${PORTNO} &" &
-    echo "server ${IDX} started: ${HOSTNAME}, at port ${PORTNO}"
+    ssh -i ~/.ssh/$USER-keypair $USER@${HOSTNAME} "cd project-4---final-project-zane-danny-ahmed && git pull && python3 server.py &" &
+    echo "server ${IDX} started: ${HOSTNAME}"
     let IDX=${IDX}+1
 done
