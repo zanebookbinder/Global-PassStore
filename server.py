@@ -452,6 +452,7 @@ def removeHost(ip):
 def addNewHost(host, cluster):
 	hosts.append(host)
 	hostClusterMap[cluster].append(host)
+	print(f'adding new host {host} to cluster {cluster}')
 
 ### Client Connection Methods ###
 
@@ -517,7 +518,8 @@ def main():
 		print("my (private) IP addr: ", myPrivateIP)
 		print("my port num: ", portno)
 
-		otherHosts.remove(myPublicIP)
+		if len(sys.argv) < 2 or sys.argv[1] != 'startup':
+			otherHosts.remove(myPublicIP)
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 
