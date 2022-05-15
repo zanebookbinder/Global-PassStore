@@ -553,6 +553,7 @@ def main():
 			print('about to serve forever')
 			while(active):
 				# server.serve_forever()
+				print("shutting down server")
 				server.handle_request()
 
 			exit(0)

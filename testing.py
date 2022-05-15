@@ -20,9 +20,9 @@ def main():
 	connection = xmlrpc.client.ServerProxy(serverUrl)
 
 	# test1()
-	# test2()
+	test2()
 	# test3()
-	test4()
+	# test4()
 
 def test1():
 	global registerCounter
@@ -58,33 +58,49 @@ def test2():
 		lines = [line.rstrip() for line in lines]
 		lines = [line for line in lines if not line == '']
 	
-	for i, url in enumerate(lines):
-		if i % 10 == 0:
-			print(str(i), url)
-		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
-		register('zbookbin', url, 'mypassword5', 2)
+	# for i, url in enumerate(lines):
+	# 	if i % 10 == 0:
+	# 		print(str(i), url)
+	# 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
+	# 	register('zbookbin', url, 'mypassword5', 2)
+
+	killedServers = 0
+
+	allHosts = hosts.copy()
+	allHosts.remove('3.98.96.39')
+
+	while killedServers < 12:
+		failed = 0
+		for url in lines:
+			try:
+				result = search('zbookbin', url)
+				if type(result) != str:
+					failed+=1
+					print(result)
+				elif result != 'mypassword5':
+					failed+=1
+					print(result)
+			except:
+				print('exception')
+				failed+=1
+
+		print('with ' + str(killedServers) + ' servers killed, failed searches (of 100): ' + str(failed))
+		killedServers+=2
 	
-	s = urlFromIp(random.choice(hosts))
-	print('shutting down', s)
-	killConnection = xmlrpc.client.ServerProxy(s)
-	killConnection.kill()
+		s1 = random.choice(allHosts)
+		allHosts.remove(s1)
+		url1 = urlFromIp(s1)
 
-	failed = 0
-	for url in lines:
-		try:
-			result = search('zbookbin', url)
-			if type(result) != str:
-				failed+=1
-				print(result)
-			elif result != 'mypassword5':
-				failed+=1
-				print(result)
-		except:
-			print('exception')
-			failed+=1
+		s2 = random.choice(allHosts)
+		allHosts.remove(s2)
+		url2 = urlFromIp(s2)
 
+		print('shutting down', s1, s2)
+		killConnection = xmlrpc.client.ServerProxy(url1)
+		killConnection.kill()
 
-	print('failed searches (of 100): ' + str(failed))
+		killConnection = xmlrpc.client.ServerProxy(url2)
+		killConnection.kill()
 
 def test3():
 	print("Test 3: Number of passwords stored in GPS vs. search time")
