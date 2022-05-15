@@ -439,7 +439,7 @@ def startup():
 		connection.addNewHost(myPublicIP, bestCluster)
 		del connection
 
-	hosts.add(myPublicIP)
+	hosts.append(myPublicIP)
 	print('startup successful')
 
 def removeHost(ip):
