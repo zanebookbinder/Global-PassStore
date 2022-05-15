@@ -58,9 +58,7 @@ def test2():
 		lines = [line.rstrip() for line in lines]
 		lines = [line for line in lines if not line == '']
 	
-	for i, url in enumerate(lines[:10]):
-		if i % 10 == 0:
-			print(str(i), url)
+	for i, url in enumerate(lines):
 		threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 		register('zbookbin', url, 'mypassword5', 2)
 
@@ -69,19 +67,19 @@ def test2():
 	allHosts = hosts.copy()
 	allHosts.remove('3.98.96.39')
 
-	while killedServers < 12:
+	while killedServers < 28:
 		failed = 0
 		for url in lines:
 			try:
 				result = search('zbookbin', url)
 				if type(result) != str:
 					failed+=1
-					print(result)
+					# print(result)
 				elif result != 'mypassword5':
 					failed+=1
-					print(result)
+					# print(result)
 			except:
-				print('exception')
+				# print('exception')
 				failed+=1
 
 		print('with ' + str(killedServers) + ' servers killed, failed searches (of 100): ' + str(failed))
@@ -143,7 +141,7 @@ def testRegisterTime(user, repetitions, numChunks):
 	start = time.perf_counter()
 	for q in range(repetitions):
 		url = ''.join(random.choice(letters) for i in range(5)) + f'-t{threading.get_ident()}'
-		print(f'registering {url}, repitition {q}')
+		# print(f'registering {url}, repitition {q}')
 		register(user, url, password, numChunks)
 	stop = time.perf_counter()
 
@@ -168,10 +166,10 @@ def register(user, url, password, numChunks):
 	userUrl = user + ' ' + url
 	threadConnection = xmlrpc.client.ServerProxy(serverUrl)
 
-	print(f'Registering: user {user}, url {url}, password {password}, {numChunks} chunks')
+	# print(f'Registering: user {user}, url {url}, password {password}, {numChunks} chunks')
 
 	storedLocations = threadConnection.register(user, userUrl, password, numChunks)
-	print("Done with register:", user, url, password, numChunks, storedLocations)
+	# print("Done with register:", user, url, password, numChunks, storedLocations)
 	if type(storedLocations) == list:
 		storedLocations = list(set(storedLocations))
 		stop = time.perf_counter()

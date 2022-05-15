@@ -514,8 +514,9 @@ def main():
 			print('about to serve forever')
 			while(serverActive):
 				# server.serve_forever()
-				print("shutting down server")
 				server.handle_request()
+
+			print("shutting down server")
 
 			exit(0)
 
