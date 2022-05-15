@@ -28,11 +28,6 @@ import string
 
 class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer): pass
 
-ids = {}
-
-for i, host in enumerate(hosts):
-	ids[host] = i
-
 localPasswordData = {}
 userPasswordMap = {}
 otherServers = {}
@@ -114,7 +109,7 @@ def propagateToOtherClusters(chunkStorageList, key):
 		
 		# tell that random other node to propagate update to its own cluster
 		threads.append([connections[i].propagate, key, chunkStorageList, randNodeOtherHosts])
-		print(f"Telling node: {ids[randNodeIP]} at cluster {randNodeCluster} to update their cluster about key " + key)
+		print(f"Telling node: {randNodeIP} at cluster {randNodeCluster} to update their cluster about key " + key)
 
 	runThreads(threads)
 	del connections
@@ -133,7 +128,7 @@ def storeChunks(storageServers, key, chunks):
 	chunkCount = 1
 	for randomHost in randomHosts:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(randomHost))
-		print("current connection for key " + key + " : id=", ids[randomHost])
+		print("current connection for key " + key + " : ip=", randomHost)
 		connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([randomHost, chunkCount])
 		chunkCount+=1
