@@ -408,6 +408,7 @@ def urlFromIp(ip):
 	return f'http://{ip}:{portno}/'
 
 def startup():
+	global myPublicIP
 	# 1. pick 10 nodes in each cluster, time connections to them
 	print('startup: making RPCs to 10 nodes in each cluster')
 	clusterTimeMap = dict.fromkeys(list(hostClusterMap.keys()), [])
