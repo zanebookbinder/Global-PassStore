@@ -407,6 +407,8 @@ def urlFromIp(ip):
 
 def startup():
 	global myPublicIP
+	global hostClusterMap
+	global hostCountryMap
 	global hosts
 	# 1. pick 10 nodes in each cluster, time connections to them
 	print('startup: making RPCs to 10 nodes in each cluster')
@@ -439,6 +441,9 @@ def startup():
 		del connection
 
 	hosts.append(myPublicIP)
+	hostClusterMap[bestCluster].append(myPublicIP)
+	hostCountryMap[myPublicIP] = 'Unknown'
+
 	print('my ip in hosts? ', myPublicIP in hosts)
 	print('startup successful')
 
