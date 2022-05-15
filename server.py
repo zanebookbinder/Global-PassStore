@@ -130,7 +130,7 @@ def storeChunks(storageServers, key, chunks):
 		# connection = xmlrpc.client.ServerProxy(urlFromIp(randomHost))
 		# print("current connection for key " + key + " : ip=", randomHost)
 		# connection.put(key+str(chunkCount), chunks[chunkCount-1])
-		safe_rpc(ip, put, key+str(chunkCount), chunks[chunkCount-1])
+		safeRPC(ip, newConnection(ip).put, key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([ip, chunkCount])
 		chunkCount+=1
 
@@ -152,7 +152,7 @@ def propagate(user, chunkStorageList, hosts):
 	for ip in hosts:
 		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		# connection.addHosts(user, chunkStorageList)
-		safe_rpc(ip, addHosts, user, chunkStorageList)
+		safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
 
 	# num_threads = 4
 	# hosts_split = split_evenly(hosts, num_threads)
@@ -168,7 +168,7 @@ def propagateHelper(user, ipList, chunkStorageList):
 		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		# connection.addHosts(user, chunkStorageList)
 		# del connection
-		safe_rpc(ip, addHosts, user, chunkStorageList)
+		safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
 
 # LOCAL helper method 
 def split_evenly(a, n):
@@ -241,7 +241,8 @@ def search(username, key):
 					# connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + str(portno) + '/')
 					# lookupResult = connection.lookup(key + str(pieceNum))
 					# del connection
-					lookupResult = safe_rpc(hostAddr[hostAddr], lookup, key + str(pieceNum))
+					ip = hostAddrs[hostAddr]
+					lookupResult = safeRPC(ip, newConnection(ip).lookup, key + str(pieceNum))
 					if lookupResult != -1:
 						print("found password piece on other server host")
 						pieces[pieceNum-1] = lookupResult
@@ -351,7 +352,7 @@ def delete(username, key):
 				# connection = xmlrpc.client.ServerProxy(urlFromIp(hostAddr))
 				# removeResult = connection.removePiece(key + str(pieceNum))
 				# del connection
-				safe_rpc(hostAddr, removePiece, key + str(pieceNum))
+				safeRPC(hostAddr, newConnection(hostAddr).removePiece, key + str(pieceNum))
 
 	deletePropogation(username, key)
 
@@ -382,7 +383,7 @@ def propagateDeletionThread(key, hostsList):
 	for ip in hostsList:
 		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		# connection.deletePasswordData(key)
-		safe_rpc(ip, deletePasswordData, key)
+		safeRPC(ip, newConnection(ip).deletePasswordData, key)
 
 		# otherServers[ip].deletePasswordData(key)
 
@@ -420,7 +421,7 @@ def startup():
 		for ip in timingHosts:
 			# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 			start = time.perf_counter()
-			safe_rpc(ip, ping)
+			safeRPC(ip, newConnection(ip).ping)
 			# connection.ping()
 			stop = time.perf_counter()
 			# del connection
@@ -442,7 +443,7 @@ def startup():
 		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		# connection.addNewHost(myPublicIP, bestCluster)
 		# del connection
-		safe_rpc(ip, addNewHost, myPublicIP, bestCluster)
+		safeRPC(ip, newConnection(ip).addNewHost, myPublicIP, bestCluster)
 
 	hosts.append(myPublicIP)
 	hostClusterMap[bestCluster].append(myPublicIP)
@@ -493,7 +494,10 @@ def testNPasswordsStored(n):
 			put(userUrl, chunk2)			
 			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
-def safe_rpc(ip, fn, *args):
+def newConnection(ip):
+	return xmlrpc.client.ServerProxy(urlFromIp(ip))
+
+def safeRPC(ip, fn, *args):
 	try:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		result = connection.fn(*args)
