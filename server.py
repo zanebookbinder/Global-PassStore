@@ -438,6 +438,7 @@ def startup():
 		connection.addNewHost(myPublicIP, bestCluster)
 		del connection
 
+	hosts.add(myPublicIP)
 	print('startup successful')
 
 def removeHost(ip):
@@ -505,21 +506,18 @@ def main():
 		current_time = time.strftime("%H:%M:%S", t)
 		print("Running at:", current_time)
 
-		if len(sys.argv) > 1 and sys.argv[1] == 'startup':
-			startup()
-
 		myPublicIP = os.popen('curl -s ifconfig.me').readline()
 		myPrivateIP = getPrivateIP()
 		myCluster = getCluster(myPublicIP)
 
-		serverCount = len(hosts)
-		
+		if len(sys.argv) > 1 and sys.argv[1] == 'startup':
+			startup()
+
 		print("my (public) IP addr: ", myPublicIP)
 		print("my (private) IP addr: ", myPrivateIP)
 		print("my port num: ", portno)
 
-		if len(sys.argv) < 2 or sys.argv[1] != 'startup':
-			otherHosts.remove(myPublicIP)
+		otherHosts.remove(myPublicIP)
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
 
