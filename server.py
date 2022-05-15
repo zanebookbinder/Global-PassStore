@@ -409,6 +409,7 @@ def urlFromIp(ip):
 
 def startup():
 	# 1. pick 10 nodes in each cluster, time connections to them
+	print('startup: making RPCs to 10 nodes in each cluster')
 	clusterTimeMap = dict.fromkeys(list(hostClusterMap.keys()), [])
 	for cluster, clusterHosts in hostClusterMap.items():
 		timingHosts = random.sample(clusterHosts, min(10, len(clusterHosts)))
@@ -421,19 +422,23 @@ def startup():
 			clusterTimeMap[cluster].append(stop - start)
 	
 	# 2. Pick the cluster with the shortest average time
+	print('startup: picking cluster with shortest rpc time')
 	minTime = float('inf')
 	bestCluster = 'americas'
-	for cluster, times in clusterTimeMap:
+	for cluster, times in clusterTimeMap.items():
 		currTime = sum(times)/len(times)
 		if currTime < minTime:
 			minTime = currTime
 			bestCluster = cluster
 	
 	# 3. tell all other servers about new server
+	print(f'startup: picked cluster {bestCluster}, telling all servers to addNewHost')
 	for ip in hosts:
 		connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 		connection.addNewHost(myPublicIP, bestCluster)
 		del connection
+
+	print('startup successful')
 
 def removeHost(ip):
 	try:
