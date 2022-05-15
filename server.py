@@ -500,7 +500,6 @@ def newConnection(ip):
 def safeRPC(ip, fn, *args):
 	try:
 		result = fn(*args)
-		del connection
 		return result
 	except ConnectionRefusedError:
 		handle_dead_host(ip)
