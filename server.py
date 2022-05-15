@@ -491,7 +491,7 @@ def testNPasswordsStored(n):
 		for i in range(n):
 			url = 'url' + str(i)
 			userUrl = 'zbookbin ' + url + '2'
-			put(userUrl, chunk2)			
+			put(userUrl, chunk2)
 			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
 def newConnection(ip):
@@ -505,7 +505,8 @@ def safeRPC(ip, fn, *args):
 		handle_dead_host(ip)
 
 def handle_dead_host(ip):
-	pass
+	print(f'host at addr {ip} not responding, telling other servers!')
+	
 
 def kill():
 	global serverActive

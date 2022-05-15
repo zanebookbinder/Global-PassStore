@@ -40,7 +40,7 @@ def main():
 				while not loggedIn:
 					user = input("\nPlease enter your username: ")
 					masterPassword = input("\nPlease enter your GPS account password: ")
-					if search(user, 'GPSpassword') == masterPassword:
+					if search(user, '__GPSpassword__') == masterPassword:
 						print("Success! You're logged in as " + user + '\n')
 						loggedIn = True
 						enteredValid = True
@@ -49,11 +49,11 @@ def main():
 					del masterPassword
 			elif option == 'C':
 				user = input("\nPlease enter your username: ")
-				if search(user, 'GPSpassword') != 'No record of key':
+				if search(user, '__GPSpassword__') != 'No record of key':
 					print('There is already an account with this password')
 				else:
 					masterPassword = input("\nPlease enter your new GPS account password: ")
-					result = register(user, 'GPSpassword', masterPassword)
+					result = register(user, '__GPSpassword__', masterPassword)
 					del masterPassword
 
 					if 'Success!' in result:
@@ -77,14 +77,6 @@ def main():
 				break
 			if len(parse) == 1 and (parse[0] == 'quit' or parse[0] == 'q'):
 				exit(0)
-			if len(parse) == 1 and parse[0] == 'g':
-				print("server localPasswordData:")
-				print(connection.getLocalPasswordData())
-				print('\n')
-				print("server userPasswordMap:")
-				print(connection.getUserPasswordMap())
-			if len(parse) == 1 and parse[0] == 'len':
-				print(connection.getUserPasswordMapLength())
 			if len(parse) < 2:
 				print("Must include correct arguments starting with 'register', 'search', or 'update\'")
 				continue
@@ -93,8 +85,11 @@ def main():
 			if command == 'search' or command == 's':
 				print('Password for ' + url + ' is: ' + search(user, url) + '\n')
 			elif command == 'delete' or command == 'd':
-				print("One second while we delete your password chunks stored around the globe...")
-				print(delete(user, url) + '\n')
+				if url == '__GPSpassword__':
+					print("Sorry, deleting your GPS password will make you unable to login.")
+				else:
+					print("One second while we delete your password chunks stored around the globe...")
+					print(delete(user, url) + '\n')
 			elif command == 'register' or command == 'r':
 				if len(parse) < 3:
 					print("Must include three arguments for a register operation\n")
