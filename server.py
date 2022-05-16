@@ -79,7 +79,7 @@ def register(username, key, val, numChunks=4):
 	replicationNodes = otherClusters[replicationCluster]
 	replicationChunkStorageList = storeChunks(replicationNodes, key, chunks)
 
-	print(f"Propagating key " + key + " to other nodes in my cluster: {myCluster}")
+	print(f'Propagating key {key} to other nodes in my cluster: {myCluster}')
 	chunkStorageList = localChunkStorageList + replicationChunkStorageList
 	propagate(key, chunkStorageList, otherNodesInCluster)
 	print("Local propagation complete.")
@@ -122,7 +122,7 @@ def propagateToOtherClusters(chunkStorageList, key):
 	# runThreads(threads)
 	# del connections
 	
-	print("password for key " + key + " has been propagated across all clusters.. register job complete!")
+	print("password for key " + key + " has been propagated across all clusters. register job complete!")
 	return
 
 def storeChunks(storageServers, key, chunks):
@@ -238,17 +238,16 @@ def search(username, key):
 			else:
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
-				try:
-					ip = hostAddrs[hostAddr]
-					lookupResult = safeRPC(ip, newConnection(ip).lookup, key + str(pieceNum))
-					if lookupResult != -1:
-						print("found password piece on other server host")
-						pieces[pieceNum-1] = lookupResult
-						foundPiece = True
-					else:
-						print(f'expected pieceNum {pieceNum} on {hostAddrs[hostAddr]} but no password piece was found!!!')
-				except:
-					print('server' + hostAddrs[hostAddr] + ' unavailable')
+				ip = hostAddrs[hostAddr]
+				lookupResult = safeRPC(ip, newConnection(ip).lookup, key + str(pieceNum))
+				if lookupResult == -1:
+					print(f'expected pieceNum {pieceNum} on {hostAddrs[hostAddr]} but no password piece was found!!!')
+				elif lookupResult == -2:
+					return "Server failure detected! Your password is being recovered from replicas, please try again shortly."
+				else:
+					print("found password piece on other server host")
+					pieces[pieceNum-1] = lookupResult
+					foundPiece = True
 
 			hostAddr += 1
 
@@ -488,6 +487,7 @@ def safeRPC(ip, fn, *args):
 		return result
 	except ConnectionRefusedError:
 		handle_dead_host(ip)
+		return -2
 
 def handle_dead_host(deadIP):
 	print(f'host at addr {ip} not responding, telling other servers!')
@@ -510,7 +510,7 @@ def handle_dead_host(deadIP):
 				updatedList.remove(deadIP)
 				replicaIP = updatedList[0]
 				lookupResult = safeRPC(replicaIP, newConnection(replicaIP).lookup, key + str(pieceNum))
-				if lookupResult == 1:
+				if lookupResult == -1:
 					print("Potential data loss! replica data could not be recovered!")
 					continue
 				replicaCluster = getCluster(replicaIP)
