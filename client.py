@@ -161,8 +161,11 @@ def urlFromIp(ip):
 def time_server(ip):
 	connection = xmlrpc.client.ServerProxy(ip)
 	start = time.perf_counter()
-	connection.ping()
-	stop = time.perf_counter()
+	try:
+		connection.ping()
+		stop = time.perf_counter()
+	except ConnectionRefusedError:
+		return -1
 
 	return stop - start
 
@@ -174,7 +177,9 @@ def intelligently_pick_server(myCluster):
 	for ip in random.sample(myCluster[1:], 10):
 		url = urlFromIp(ip)
 		time = time_server(url)
-		if time < curBestTime:
+		if time == -1:
+			myCluster.remove(ip)
+		elif time < curBestTime:
 			curBestTime = time
 			curBestServer = ip
 
