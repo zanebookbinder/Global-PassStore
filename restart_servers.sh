@@ -1,4 +1,10 @@
 #!/bin/bash
+# 1. connect to every server host
+#   a. kill all GPS server processes
+#   b. moves into Git repo directory for this project
+#   c. pulls any updates to repo
+#   d. execute python server code (actually starts the server -- port number in constants.py)
+
 
 HOSTS=$(python3 constants.py h)
 PORTNO=$(python3 constants.py p)

@@ -1,4 +1,8 @@
 #!/bin/bash
+# 1. connects to every server host
+#   a. moves into Git repo directory for this project
+#   b. pulls any updates to repo
+#   c. execute python server code (actually starts the server -- port number in constants.py)
 
 HOSTS=$(python3 constants.py h)
 

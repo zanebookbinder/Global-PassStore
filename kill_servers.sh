@@ -1,4 +1,7 @@
 #!/bin/bash
+# 1. connect to every server host
+#   a. kill all GPS server processes
+
 
 HOSTS=$(python3 constants.py h)
 PORTNO=$(python3 constants.py p)

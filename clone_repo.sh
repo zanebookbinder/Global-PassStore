@@ -1,4 +1,9 @@
 #!/bin/bash
+# 1. connects to every server host
+#   a. removes any existing Git repos of this project
+#   b. creates ssh config file
+#   c. allows read and write permissions for user for the above config file
+#   d. Clones this git repository
 
 HOSTS=$(python3 constants.py h)
 
