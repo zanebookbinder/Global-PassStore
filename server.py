@@ -486,12 +486,11 @@ def safeRPC(ip, fn, *args):
 		result = fn(*args)
 		return result
 	except ConnectionRefusedError:
+		print(f'Dead host detected! ip = {ip}')
 		handle_dead_host(ip)
 		return -2
 
 def handle_dead_host(deadIP):
-	print(f'host at addr {ip} not responding, telling other servers!')
-
 	# 1. remove this IP from all servers' list of hosts
 	deadHostCluster = getCluster(deadIP)
 	removeHost(deadIP)
@@ -503,7 +502,7 @@ def handle_dead_host(deadIP):
 	dataToReReplicate = []
 	for key, pieceDict in userPasswordMap.items():
 		newChunkStorageList = []
-		user, url = key.split(' ')
+		user, _ = key.split(' ')
 		for pieceNum, ipList in pieceDict.values:
 			if deadIP in ipList:
 				updatedList = ipList.copy()
