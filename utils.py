@@ -10,6 +10,8 @@ def main():
 		print("- 'upm' -> view userPasswordMap")
 		print("- 'len' -> view number of passwords stored in the system")
 		print("- 'pws' -> view local password data for the connected server")
+		print("- 'clu' -> view server's map of clusters")
+		print("- 'kill' -> kill this server")
 		parse = input("Enter a command. > ")
 		print()
 		if parse == 'upm':
@@ -18,8 +20,11 @@ def main():
 			print(connection.getUserPasswordMapLength())
 		elif parse == 'pws':
 			print(connection.getLocalPasswordData())
+		elif parse == 'clu':
+			print(connection.getHostClusterMap())
 		elif parse == 'kill':
 			print(f'kill status: {connection.kill()}')
+			connection.getUserPasswordMapLength()
 		print()
 
 

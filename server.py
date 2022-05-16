@@ -285,7 +285,8 @@ def getUserPasswordMapLength():
 
 def getLocalPasswordData():
 	return str(localPasswordData)
-
+def getHostClusterMap():
+	return str(hostClusterMap)
 
 # LOCAL method, no outgoing RPCs to other servers
 def addHosts(userSite, chunkStorageList):
@@ -637,6 +638,7 @@ def main():
 			server.register_function(put)
 			server.register_function(getUserPasswordMap)
 			server.register_function(getUserPasswordMapLength)
+			server.register_function(getHostClusterMap)
 			server.register_function(getLocalPasswordData)
 			server.register_function(addHosts)
 			server.register_function(propagate)

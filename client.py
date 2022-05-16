@@ -199,11 +199,11 @@ def selectCluster(region, hostClusterMap):
 def updateChunkCount(c):
 	global chunkCount
 	if c.isdigit():
-		if int(c) < 11 and int(c) > 1: 
+		if int(c) < 13 and int(c) > 1: 
 			chunkCount = int(c)
 			print("Registration chunk count is updated to " + str(chunkCount) + '\n')
 		else:
-			print("Chunk count must be between 2 and 10 (inclusive)")
+			print("Chunk count must be between 2 and 12 (inclusive)")
 	else:
 		print("Chunk count must be a number")
 
