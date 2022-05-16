@@ -506,12 +506,15 @@ def handle_dead_host(deadIP):
 		safeRPC(ip, newConnection(ip).removeHost, deadIP)
 	
 	# 2. re-replicate that node's password data
-	dataToReReplicate = []
+	print('print1')
 	for key, pieceDict in userPasswordMap.items():
+		print('print2')
 		newChunkStorageList = []
 		user, _ = key.split(' ')
 		for pieceNum, ipList in pieceDict.values:
+			print('print3')
 			if deadIP in ipList:
+				print('print4')
 				updatedList = ipList.copy()
 				updatedList.remove(deadIP)
 				replicaIP = updatedList[0]
@@ -519,6 +522,7 @@ def handle_dead_host(deadIP):
 				if lookupResult == -1:
 					print("Potential data loss! replica data could not be recovered!")
 					continue
+				print('print5')
 				replicaCluster = getCluster(replicaIP)
 				restOfCluster = hostClusterMap[replicaCluster].copy()
 				restOfCluster.remove(replicaIP)
