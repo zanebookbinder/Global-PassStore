@@ -123,24 +123,6 @@ def propagateToOtherClusters(chunkStorageList, key):
 		print(f'chunkStorageList: {chunkStorageList}')
 		safeRPC(randNodeIP, newConnection(randNodeIP).propagate, key, chunkStorageList, randNodeOtherHosts)	
 		
-
-	# threads = []
-	# for i, ipList in enumerate(list(otherClusters.values())):
-	# 	# pick one node randomly in each other cluster
-	# 	randNodeIP = random.choice(ipList)
-	# 	randNodeCluster = getCluster(randNodeIP)
-	# 	randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
-	# 	randNodeOtherHosts.remove(randNodeIP)
-
-	# 	connections[i] = xmlrpc.client.ServerProxy(urlFromIp(randNodeIP))
-		
-	# 	# tell that random other node to propagate update to its own cluster
-	# 	threads.append([connections[i].propagate, key, chunkStorageList, randNodeOtherHosts])
-	# 	print(f"Telling node: {randNodeIP} at cluster {randNodeCluster} to update their cluster about key " + key)
-
-	# runThreads(threads)
-	# del connections
-	
 	print("password for key " + key + " has been propagated across all clusters. register job complete!")
 	return
 
@@ -274,19 +256,6 @@ def search(username, key):
 
 	return ''.join(pieces).strip()
 
-
-def getUserPasswordMap():
-	return str(userPasswordMap)
-
-
-def getUserPasswordMapLength():
-	return str(len(list(userPasswordMap.keys())))
-
-
-def getLocalPasswordData():
-	return str(localPasswordData)
-def getHostClusterMap():
-	return str(hostClusterMap)
 
 # LOCAL method, no outgoing RPCs to other servers
 def addHosts(userSite, chunkStorageList):
@@ -424,11 +393,6 @@ def runThreads(routines):
 		t.join()
 
 
-def urlFromIp(ip):
-	""" Makes a full URL out of an IP address.
-	"""
-	return f'http://{ip}:{portno}/'
-
 
 def startup():
 	global myPublicIP
@@ -484,35 +448,6 @@ def addNewHost(host, cluster):
 	hostClusterMap[cluster].append(host)
 	print(f'adding new host {host} to cluster {cluster}')
 
-### Client Connection Methods ###
-
-def ping(ret=None):
-	""" Simple ping method to time RPCs in order to figure out which server would be 
-		best suited to serve a client
-	"""
-	return
-
-
-def testNPasswordsStored(n):
-	letters = string.ascii_lowercase
-	chunk1 = 'may1'
-	chunk2 = '4th'
-	if myPublicIP == '3.98.96.39':
-
-		for i in range(n):
-			url = 'url' + str(i)
-			userUrl = 'zbookbin ' + url + '1'
-			put(userUrl, chunk1)			
-			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
-
-	if myPublicIP == '3.99.158.136':
-		
-		for i in range(n):
-			url = 'url' + str(i)
-			userUrl = 'zbookbin ' + url + '2'
-			put(userUrl, chunk2)
-			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
-
 
 def newConnection(ip):
 	return xmlrpc.client.ServerProxy(urlFromIp(ip))
@@ -531,6 +466,11 @@ def safeRPC(ip, fn, *args):
 
 
 def handleDeadHost(deadIP):
+	"""
+	Function to handle detection of node failure. Removes this node from clusters and
+	list of hosts, and tells other nodes to do the same. Also locates and re-replicates
+	the failed nodes' data. 
+	"""
 	# 1. remove this IP from all servers' list of hosts
 	print('removing dead host')
 	removeHost(deadIP)
@@ -578,7 +518,6 @@ def handleDeadHost(deadIP):
 				for host in hosts:
 					if host == myPublicIP: pass
 					safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, deadIP, newReplicaIP)
-				# propagate(user, newChunkStorageList, hosts)
 
 
 def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
@@ -590,13 +529,59 @@ def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
 	userPasswordMap[key][pieceNum].append(newIP)
 
 
+def urlFromIp(ip):
+	""" Makes a full URL out of an IP address.
+	"""
+	return f'http://{ip}:{portno}/'
+
+### Client Connection Methods ###
+
+def testNPasswordsStored(n):
+	letters = string.ascii_lowercase
+	chunk1 = 'may1'
+	chunk2 = '4th'
+	if myPublicIP == '3.98.96.39':
+
+		for i in range(n):
+			url = 'url' + str(i)
+			userUrl = 'zbookbin ' + url + '1'
+			put(userUrl, chunk1)			
+			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
+
+	if myPublicIP == '3.99.158.136':
+		
+		for i in range(n):
+			url = 'url' + str(i)
+			userUrl = 'zbookbin ' + url + '2'
+			put(userUrl, chunk2)
+			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
+
+
+def ping(ret=None):
+	""" Simple ping method to time RPCs in order to figure out which server would be 
+		best suited to serve a client
+	"""
+	return
+
+def getUserPasswordMap():
+	return str(userPasswordMap)
+
+
+def getUserPasswordMapLength():
+	return str(len(list(userPasswordMap.keys())))
+
+
+def getLocalPasswordData():
+	return str(localPasswordData)
+
+def getHostClusterMap():
+	return str(hostClusterMap)
+
 def kill():
 	global serverActive
 
 	print('Killing server now. Goodbye!')
 	serverActive = False
-	# server.shutdown()
-	# exit(0)
 	return 1
 
 
@@ -626,12 +611,6 @@ def main():
 		print("my port num: ", portno)
 
 		with AsyncXMLRPCServer((myPrivateIP, portno), allow_none=True) as server:
-
-			# def quit():
-			# 	server._BaseServer__shutdown_request = True
-			# 	server.shutdown()
-			# 	exit(0)
-
 			server.register_introspection_functions()
 			server.register_function(register)
 			server.register_function(search)
@@ -655,12 +634,7 @@ def main():
 
 			print('about to serve forever')
 			while(serverActive):
-				# server.serve_forever()
 				server.handle_request()
-
-			print("shutting down server")
-
-			exit(0)
 
 	except Exception:
 		print(traceback.format_exc())
