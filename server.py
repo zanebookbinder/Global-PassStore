@@ -494,10 +494,12 @@ def safeRPC(ip, fn, *args):
 		return result
 	except ConnectionRefusedError:
 		print(f'Dead host detected! ip = {ip}')
-		handle_dead_host(ip)
+		handleDeadHost(ip)
+		handleDeadHostThread = threading.Thread(target=handleDeadHost, args=(ip))
+		handleDeadHostThread.start()
 		return HOST_FAIL
 
-def handle_dead_host(deadIP):
+def handleDeadHost(deadIP):
 	# 1. remove this IP from all servers' list of hosts
 	deadHostCluster = getCluster(deadIP)
 	removeHost(deadIP)
@@ -508,10 +510,18 @@ def handle_dead_host(deadIP):
 	# 2. re-replicate that node's password data
 	print('print1')
 	for key, pieceDict in userPasswordMap.items():
+		"""
+		'danny google'com: {
+			{1: ['44.199.229.51', '18.136.203.66'], 
+			2: ['3.22.185.101', '18.166.176.112'], 
+			3: ['13.57.194.105', '13.233.255.217'], 
+			4: ['18.191.134.62', '16.162.137.92']
+		}
+		"""
 		print('print2')
 		newChunkStorageList = []
 		user, _ = key.split(' ')
-		for pieceNum, ipList in pieceDict.values():
+		for pieceNum, ipList in pieceDict.items():
 			print('print3')
 			if deadIP in ipList:
 				print('print4')
