@@ -127,9 +127,6 @@ def storeChunks(storageServers, key, chunks):
 
 	chunkCount = 1
 	for ip in randomHosts:
-		# connection = xmlrpc.client.ServerProxy(urlFromIp(randomHost))
-		# print("current connection for key " + key + " : ip=", randomHost)
-		# connection.put(key+str(chunkCount), chunks[chunkCount-1])
 		safeRPC(ip, newConnection(ip).put, key+str(chunkCount), chunks[chunkCount-1])
 		chunkStorageList.append([ip, chunkCount])
 		chunkCount+=1
@@ -150,8 +147,6 @@ def propagate(user, chunkStorageList, hosts):
 
 	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
 	for ip in hosts:
-		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		# connection.addHosts(user, chunkStorageList)
 		safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
 
 	# num_threads = 4
@@ -165,9 +160,6 @@ def propagate(user, chunkStorageList, hosts):
 def propagateHelper(user, ipList, chunkStorageList):
 	print(f'running addHosts on ip {ipList}')
 	for ip in ipList:
-		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		# connection.addHosts(user, chunkStorageList)
-		# del connection
 		safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
 
 # LOCAL helper method 
@@ -238,9 +230,6 @@ def search(username, key):
 				# find piece on other machine with RPC
 				print("looking up password piece on other server host")
 				try:
-					# connection = xmlrpc.client.ServerProxy('http://' + hostAddrs[hostAddr] + ':' + str(portno) + '/')
-					# lookupResult = connection.lookup(key + str(pieceNum))
-					# del connection
 					ip = hostAddrs[hostAddr]
 					lookupResult = safeRPC(ip, newConnection(ip).lookup, key + str(pieceNum))
 					if lookupResult != -1:
@@ -349,9 +338,6 @@ def delete(username, key):
 			else:
 				# find piece on other machine with RPC
 				print("password piece found remotely")
-				# connection = xmlrpc.client.ServerProxy(urlFromIp(hostAddr))
-				# removeResult = connection.removePiece(key + str(pieceNum))
-				# del connection
 				safeRPC(hostAddr, newConnection(hostAddr).removePiece, key + str(pieceNum))
 
 	deletePropogation(username, key)
@@ -381,11 +367,7 @@ def deletePropogation(user, key):
 def propagateDeletionThread(key, hostsList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
-		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		# connection.deletePasswordData(key)
 		safeRPC(ip, newConnection(ip).deletePasswordData, key)
-
-		# otherServers[ip].deletePasswordData(key)
 
 def runThreads(routines):
 	""" Takes in a list of 'routines', which should be structured as a list
@@ -419,12 +401,9 @@ def startup():
 	for cluster, clusterHosts in hostClusterMap.items():
 		timingHosts = random.sample(clusterHosts, min(10, len(clusterHosts)))
 		for ip in timingHosts:
-			# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
 			start = time.perf_counter()
 			safeRPC(ip, newConnection(ip).ping)
-			# connection.ping()
 			stop = time.perf_counter()
-			# del connection
 			clusterTimeMap[cluster].append(stop - start)
 	
 	# 2. Pick the cluster with the shortest average time
@@ -440,9 +419,6 @@ def startup():
 	# 3. tell all other servers about new server
 	print(f'startup: picked cluster {bestCluster}, telling all servers to addNewHost')
 	for ip in hosts:
-		# connection = xmlrpc.client.ServerProxy(urlFromIp(ip))
-		# connection.addNewHost(myPublicIP, bestCluster)
-		# del connection
 		safeRPC(ip, newConnection(ip).addNewHost, myPublicIP, bestCluster)
 
 	hosts.append(myPublicIP)
@@ -459,7 +435,7 @@ def removeHost(ip):
 			if ip in clusterHosts:
 				clusterHosts.remove(ip)
 	except:
-		print(f'trying to remove ip {ip}, but it was already not in list of hosts.')
+		print(f'trying to remove ip {ip}, but it was not in list of hosts.')
 
 def addNewHost(host, cluster):
 	hosts.append(host)
@@ -506,7 +482,7 @@ def safeRPC(ip, fn, *args):
 
 def handle_dead_host(ip):
 	print(f'host at addr {ip} not responding, telling other servers!')
-	
+
 
 def kill():
 	global serverActive
