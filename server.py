@@ -539,14 +539,14 @@ def handleDeadHost(deadIP):
 				safeRPC(newReplicaIP, newConnection(newReplicaIP).put, key + str(pieceNum), lookupResult)
 				print(f'Data re-replicated: stored key {key}, piece {pieceNum} at server {newReplicaIP}')
 
-		# 3. propagate new password storage to all clusters (for each user) 
-		if (newReplicaIP):
-			print(f'Telling all hosts to replace deadIP with newIP: {newReplicaIP}, pieceNum {pieceNum}')
-			replaceUserPasswordMapIP(key, pieceNum, deadIP, newReplicaIP)
-			for host in hosts:
-				safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, deadIP, newReplicaIP)
-				host.replaceUserPasswordMapIP
-			# propagate(user, newChunkStorageList, hosts)
+			# 3. propagate new password storage to all clusters (for each user) 
+			if (newReplicaIP):
+				print(f'Telling all hosts to replace deadIP with newIP: {newReplicaIP}, pieceNum {pieceNum}')
+				replaceUserPasswordMapIP(key, pieceNum, deadIP, newReplicaIP)
+				for host in hosts:
+					safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, deadIP, newReplicaIP)
+					host.replaceUserPasswordMapIP
+				# propagate(user, newChunkStorageList, hosts)
 
 def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
 	print(f'replacing deadIP {deadIP} of upm[{key}][{pieceNum}] with ip: {newIP}')
