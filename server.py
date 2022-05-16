@@ -537,7 +537,8 @@ def handleDeadHost(deadIP):
 				restOfCluster = hostClusterMap[replicaCluster].copy()
 				restOfCluster.remove(replicaIP)
 				newReplicaIP = random.choice(restOfCluster)
-				safeRPC(newReplicaIP, newConnection(newReplicaIP).put, key + str(pieceNum))
+				
+				safeRPC(newReplicaIP, newConnection(newReplicaIP).put, key + str(pieceNum), lookupResult)
 				print(f'stored key {key}, piece {pieceNum} at server {newReplicaIP}')
 				newChunkStorageList.append[newReplicaIP, pieceNum]
 
