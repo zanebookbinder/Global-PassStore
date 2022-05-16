@@ -66,7 +66,6 @@ def register(username, key, val, numChunks=4):
 	chunks = split_evenly(val, numChunks)
 	chunkStorageList = []
 	
-	print('start of register')
 	otherNodesInCluster = hostClusterMap[myCluster].copy()
 	otherNodesInCluster.remove(myPublicIP)
 
@@ -83,38 +82,47 @@ def register(username, key, val, numChunks=4):
 	print(f"Propagating key " + key + " to other nodes in my cluster: {myCluster}")
 	chunkStorageList = localChunkStorageList + replicationChunkStorageList
 	propagate(key, chunkStorageList, otherNodesInCluster)
-	print("Local propagation complete. Now, telling one node in all other cluster to propagate key " + key + " to their cluster")
-	print('end of register')
+	print("Local propagation complete.")
 
 	globalPropagateThread = threading.Thread(target=propagateToOtherClusters, args=(chunkStorageList, key))
 	globalPropagateThread.start()
-	print(f'Replicate threads started, returning from register method to client. {username}, {key}')
+	print(f'Global propagation threads started, returning from register method to client. {username}, {key}')
 	return [hostCountryMap[host] for host, _ in replicationChunkStorageList]
 
 def propagateToOtherClusters(chunkStorageList, key):
 	print(f'Running propagateToOtherClusters funciton, for key: {key}')
-	threads = []
 	
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
-	connections = []
-	for i, ipList in enumerate(list(otherClusters.values())):
-		# pick one node randomly in each other cluster
+	for cluster, ipList in enumerate(list(otherClusters.values())):
 		randNodeIP = random.choice(ipList)
 		randNodeCluster = getCluster(randNodeIP)
 		randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
 		randNodeOtherHosts.remove(randNodeIP)
 
-		connections[i] = xmlrpc.client.ServerProxy(urlFromIp(randNodeIP))
+		print(f'telling server {randNodeIP} to propagate to its cluster {cluster}.')
+		print(f'chunkStorageList: {chunkStorageList}')
+		safeRPC(randNodeIP, newConnection(randNodeIP).propagate, key, chunkStorageList, randNodeOtherHosts)	
 		
-		# tell that random other node to propagate update to its own cluster
-		threads.append([connections[i].propagate, key, chunkStorageList, randNodeOtherHosts])
-		print(f"Telling node: {randNodeIP} at cluster {randNodeCluster} to update their cluster about key " + key)
 
-	runThreads(threads)
-	del connections
+	# threads = []
+	# for i, ipList in enumerate(list(otherClusters.values())):
+	# 	# pick one node randomly in each other cluster
+	# 	randNodeIP = random.choice(ipList)
+	# 	randNodeCluster = getCluster(randNodeIP)
+	# 	randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
+	# 	randNodeOtherHosts.remove(randNodeIP)
+
+	# 	connections[i] = xmlrpc.client.ServerProxy(urlFromIp(randNodeIP))
+		
+	# 	# tell that random other node to propagate update to its own cluster
+	# 	threads.append([connections[i].propagate, key, chunkStorageList, randNodeOtherHosts])
+	# 	print(f"Telling node: {randNodeIP} at cluster {randNodeCluster} to update their cluster about key " + key)
+
+	# runThreads(threads)
+	# del connections
 	
-	print("password for key " + key + " has been distributed twice. register job complete!")
+	print("password for key " + key + " has been propagated across all clusters.. register job complete!")
 	return
 
 def storeChunks(storageServers, key, chunks):
@@ -147,7 +155,8 @@ def propagate(user, chunkStorageList, hosts):
 
 	print(f'in propagate method, propagating to hosts {hosts}, chunkStorageList {chunkStorageList}')
 	for ip in hosts:
-		safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
+		if ip != myPublicIP:
+			safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
 
 	# num_threads = 4
 	# hosts_split = split_evenly(hosts, num_threads)
@@ -480,8 +489,34 @@ def safeRPC(ip, fn, *args):
 	except ConnectionRefusedError:
 		handle_dead_host(ip)
 
-def handle_dead_host(ip):
+def handle_dead_host(deadIP):
 	print(f'host at addr {ip} not responding, telling other servers!')
+
+	# 1. remove this IP from all servers' list of hosts
+	deadHostCluster = getCluster(deadIP)
+	removeHost(deadIP)
+	for ip in hosts:
+		if ip == myPublicIP: continue
+		safeRPC(ip, newConnection(ip).removeHost, deadIP)
+	
+	# 2. re-replicate that node's password data
+	dataToReReplicate = []
+	for key, pieceDict in userPasswordMap.items():
+		for pieceNum, ipList in pieceDict.values:
+			if deadIP in ipList:
+				updatedList = ipList.copy()
+				updatedList.remove(deadIP)
+				replicaIP = updatedList[0]
+				lookupResult = safeRPC(replicaIP, newConnection(replicaIP).lookup, key + str(pieceNum))
+				if lookupResult == 1:
+					print("Potential data loss! replica data could not be recovered!")
+					continue
+				replicaCluster = getCluster(replicaIP)
+				restOfCluster = hostClusterMap[replicaCluster].copy()
+				restOfCluster.remove(replicaIP)
+				newReplicaIP = random.choice(restOfCluster)
+				safeRPC(newReplicaIP, newConnection(newReplicaIP))
+
 
 
 def kill():
