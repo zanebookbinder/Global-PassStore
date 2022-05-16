@@ -544,13 +544,14 @@ def handleDeadHost(deadIP):
 				print(f'Telling all hosts to replace deadIP with newIP: {newReplicaIP}, pieceNum {pieceNum}')
 				replaceUserPasswordMapIP(key, pieceNum, deadIP, newReplicaIP)
 				for host in hosts:
+					if host == myPublicIP: pass
 					safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, deadIP, newReplicaIP)
 				# propagate(user, newChunkStorageList, hosts)
 
 def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
 	print(f'replacing deadIP {deadIP} of upm[{key}][{pieceNum}] with ip: {newIP}')
 	try:
-		userPasswordMap[key][pieceNum].remove(newIP)
+		userPasswordMap[key][pieceNum].remove(deadIP)
 	except:
 		pass
 	userPasswordMap[key][pieceNum].append(newIP)
