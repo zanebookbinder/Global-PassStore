@@ -14,7 +14,6 @@ from ast import arguments
 import os
 import traceback
 import sys
-from winreg import KEY_NOTIFY
 import xmlrpc.client
 import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
