@@ -20,7 +20,7 @@ from xmlrpc.server import SimpleXMLRPCRequestHandler
 from xmlrpc.server import SimpleXMLRPCServer
 from socketserver import ThreadingMixIn
 from constants import hosts, portno, hostClusterMap, hostCountryMap
-import math
+from copy import deepcopy
 import random
 import time
 import threading
@@ -338,7 +338,6 @@ def delete(username, key):
 
 	print("getting all of the password pieces for the account: " + str(key))
 	pieceNumToHost = userPasswordMap[key] # {1: [35.4523.42, 12.45.66], 2: [456.5434, 45.682.3943], 3: [35.4523.42, 12.45.66], 4: [456.5434, 45.682.3943]}
-	pieces = ['' for i in range(len(pieceNumToHost.keys()))]
 
 	# iterating through every password piece number and server host that is in charge of that
 	# password piece
@@ -509,7 +508,8 @@ def handleDeadHost(deadIP):
 	
 	# 2. re-replicate that node's password data
 	print('print1')
-	for key, pieceDict in userPasswordMap.items():
+	upmCopy = deepcopy(userPasswordMap)
+	for key, pieceDict in upmCopy.items():
 		"""
 		'danny google'com: {
 			{1: ['44.199.229.51', '18.136.203.66'], 
