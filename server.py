@@ -28,6 +28,8 @@ import string
 
 class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer): pass
 
+HOST_FAIL = -2
+
 localPasswordData = {}
 userPasswordMap = {}
 otherServers = {}
@@ -71,6 +73,8 @@ def register(username, key, val, numChunks=4):
 
 	print(f'Attemtping to store password for key: {key} to local cluster')
 	localChunkStorageList = storeChunks(otherNodesInCluster, key, chunks)
+	if localChunkStorageList == HOST_FAIL:
+		return 'Server outage detected, please try again later!'
 
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
@@ -78,6 +82,8 @@ def register(username, key, val, numChunks=4):
 	print(f'Attemtping to replicate password for key: {key} to other cluster: {replicationCluster}')
 	replicationNodes = otherClusters[replicationCluster]
 	replicationChunkStorageList = storeChunks(replicationNodes, key, chunks)
+	if replicationChunkStorageList == HOST_FAIL:
+		return 'Server outage detected, please try again later!'
 
 	print(f'Propagating key {key} to other nodes in my cluster: {myCluster}')
 	chunkStorageList = localChunkStorageList + replicationChunkStorageList
@@ -135,7 +141,8 @@ def storeChunks(storageServers, key, chunks):
 
 	chunkCount = 1
 	for ip in randomHosts:
-		safeRPC(ip, newConnection(ip).put, key+str(chunkCount), chunks[chunkCount-1])
+		res = safeRPC(ip, newConnection(ip).put, key+str(chunkCount), chunks[chunkCount-1])
+		if res == HOST_FAIL: return HOST_FAIL
 		chunkStorageList.append([ip, chunkCount])
 		chunkCount+=1
 
@@ -242,7 +249,7 @@ def search(username, key):
 				lookupResult = safeRPC(ip, newConnection(ip).lookup, key + str(pieceNum))
 				if lookupResult == -1:
 					print(f'expected pieceNum {pieceNum} on {hostAddrs[hostAddr]} but no password piece was found!!!')
-				elif lookupResult == -2:
+				elif lookupResult == HOST_FAIL:
 					return "Server failure detected! Your password is being recovered from replicas, please try again shortly."
 				else:
 					print("found password piece on other server host")
@@ -488,7 +495,7 @@ def safeRPC(ip, fn, *args):
 	except ConnectionRefusedError:
 		print(f'Dead host detected! ip = {ip}')
 		handle_dead_host(ip)
-		return -2
+		return HOST_FAIL
 
 def handle_dead_host(deadIP):
 	# 1. remove this IP from all servers' list of hosts
@@ -583,6 +590,7 @@ def main():
 			server.register_function(ping)
 			server.register_function(kill)
 			server.register_function(addNewHost)
+			server.register_function(removeHost)
 			
 			print('about to serve forever')
 			while(serverActive):
