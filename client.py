@@ -1,3 +1,6 @@
+""" Global PassStore (GPS) interactive client program for connecting to server nodes, registering passwords, and performing
+search operations to retrieve that password data. """
+
 import xmlrpc.client
 import sys
 import time
@@ -109,6 +112,7 @@ def main():
 			elif command == 'chunk count' or command == 'c':
 				updateChunkCount(url)
 
+
 def register(user, url, password):
 	global chunkCount
 	start = time.perf_counter()
@@ -123,10 +127,12 @@ def register(user, url, password):
 		return "Success! Your password is saved, and is being replicated to: " + str(storedLocations) + "\nThis operation took " + str(round(stop-start,2)) + " seconds"
 	return "Failure! " + storedLocations
 
+
 def search(user, url):
 	userUrl = user + ' ' + url
 	result = connection.search(user, userUrl)
 	return result
+
 
 def update(user, url, password):
 	result = search(user, url)
@@ -140,14 +146,17 @@ def update(user, url, password):
 
 	return register(user, url, password)
 
+
 def delete(user, url):
 	userUrl = user + ' ' + url
 	return connection.delete(user, userUrl)
+
 
 def urlFromIp(ip):
 	""" Makes a full URL out of an IP address.
 	"""
 	return f'http://{ip}:{portno}/'
+
 
 def time_server(ip):
 	connection = xmlrpc.client.ServerProxy(ip)
@@ -156,6 +165,7 @@ def time_server(ip):
 	stop = time.perf_counter()
 
 	return stop - start
+
 
 def intelligently_pick_server(myCluster):
 	curBestTime = 100
@@ -170,6 +180,7 @@ def intelligently_pick_server(myCluster):
 
 	return curBestServer, curBestTime
 
+
 def selectCluster(region, hostClusterMap):
 	if region in ['Americas', 'A']:
 		return hostClusterMap['americas']
@@ -178,6 +189,7 @@ def selectCluster(region, hostClusterMap):
 	else:
 		print("Invalid cluster!")
 		return []
+
 
 def updateChunkCount(c):
 	global chunkCount
@@ -189,6 +201,7 @@ def updateChunkCount(c):
 			print("Chunk count must be between 2 and 10 (inclusive)")
 	else:
 		print("Chunk count must be a number")
+
 
 if __name__ == "__main__":
 	main()

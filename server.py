@@ -1,6 +1,6 @@
 """
 Program Description: Distributed password manager server that stores and manages various usernames,
-websites, and 
+websites, and passwords.
 
 TODO:
 	1. Add username security (don't allow user to access someone else's data)
@@ -26,6 +26,7 @@ import time
 import threading
 import string
 
+
 class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer): pass
 
 HOST_FAIL = -2
@@ -38,10 +39,21 @@ serverActive = True
 
 myPrivateIP = myPublicIP = myCluster = ""
 
+
 def getCluster(ip):
+	"""
+	Helper method that returns the cluster of a server node given its IP address (if that node IP exists
+	within a cluster in the system)
+	@params:
+		ip (string): The IP address of the server node that will be looked up
+
+	@return
+		string - The cluster which holds the given server nodes, if the IP address exists in the system.
+	"""
 	for key, clusterList in hostClusterMap.items():
 		if ip in clusterList:
 			return key
+
 
 def register(username, key, val, numChunks=4):
 	"""
@@ -95,6 +107,7 @@ def register(username, key, val, numChunks=4):
 	print(f'Global propagation threads started, returning from register method to client. {username}, {key}')
 	return [hostCountryMap[host] for host, _ in replicationChunkStorageList]
 
+
 def propagateToOtherClusters(chunkStorageList, key):
 	print(f'Running propagateToOtherClusters funciton, for key: {key}')
 	
@@ -130,6 +143,7 @@ def propagateToOtherClusters(chunkStorageList, key):
 	
 	print("password for key " + key + " has been propagated across all clusters. register job complete!")
 	return
+
 
 def storeChunks(storageServers, key, chunks):
 	"""
@@ -260,14 +274,18 @@ def search(username, key):
 
 	return ''.join(pieces).strip()
 
+
 def getUserPasswordMap():
 	return str(userPasswordMap)
+
 
 def getUserPasswordMapLength():
 	return str(len(list(userPasswordMap.keys())))
 
+
 def getLocalPasswordData():
 	return str(localPasswordData)
+
 
 # LOCAL method, no outgoing RPCs to other servers
 def addHosts(userSite, chunkStorageList):
@@ -314,6 +332,7 @@ def getPrivateIP():
 
 	return myPrivateIP
 
+
 def removePiece(key):
 	print("in remove piece with key: " + str(key))
 	if key not in localPasswordData:
@@ -358,12 +377,14 @@ def delete(username, key):
 
 	return "Successful deletion!"
 
+
 def deletePasswordData(key):
 	if key not in userPasswordMap:
 		return -1
 
 	del userPasswordMap[key]
 	return 1
+
 
 def deletePropogation(user, key):
 	print("deleting " + str(key) + "from all user-password maps")
@@ -378,10 +399,12 @@ def deletePropogation(user, key):
 
 	runThreads(deleteOps)
 
+
 def propagateDeletionThread(key, hostsList):
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		safeRPC(ip, newConnection(ip).deletePasswordData, key)
+
 
 def runThreads(routines):
 	""" Takes in a list of 'routines', which should be structured as a list
@@ -399,10 +422,12 @@ def runThreads(routines):
 	for t in threads:
 		t.join()
 
+
 def urlFromIp(ip):
 	""" Makes a full URL out of an IP address.
 	"""
 	return f'http://{ip}:{portno}/'
+
 
 def startup():
 	global myPublicIP
@@ -442,6 +467,7 @@ def startup():
 	print('my ip in hosts? ', myPublicIP in hosts)
 	print('startup successful')
 
+
 def removeHost(ip):
 	try:
 		hosts.remove(ip)
@@ -450,6 +476,7 @@ def removeHost(ip):
 				clusterHosts.remove(ip)
 	except:
 		print(f'trying to remove ip {ip}, but it was not in list of hosts.')
+
 
 def addNewHost(host, cluster):
 	hosts.append(host)
@@ -463,6 +490,7 @@ def ping(ret=None):
 		best suited to serve a client
 	"""
 	return
+
 
 def testNPasswordsStored(n):
 	letters = string.ascii_lowercase
@@ -484,8 +512,10 @@ def testNPasswordsStored(n):
 			put(userUrl, chunk2)
 			userPasswordMap[userUrl] = {1:['3.98.96.39'], 2:['3.99.158.136']}
 
+
 def newConnection(ip):
 	return xmlrpc.client.ServerProxy(urlFromIp(ip))
+
 
 def safeRPC(ip, fn, *args):
 	try:
@@ -497,6 +527,7 @@ def safeRPC(ip, fn, *args):
 		handleDeadHostThread = threading.Thread(target=handleDeadHost, args=(ip))
 		handleDeadHostThread.start()
 		return HOST_FAIL
+
 
 def handleDeadHost(deadIP):
 	# 1. remove this IP from all servers' list of hosts
@@ -548,6 +579,7 @@ def handleDeadHost(deadIP):
 					safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, deadIP, newReplicaIP)
 				# propagate(user, newChunkStorageList, hosts)
 
+
 def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
 	print(f'replacing deadIP {deadIP} of upm[{key}][{pieceNum}] with ip: {newIP}')
 	try:
@@ -555,6 +587,7 @@ def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
 	except:
 		pass
 	userPasswordMap[key][pieceNum].append(newIP)
+
 
 def kill():
 	global serverActive
@@ -564,6 +597,7 @@ def kill():
 	# server.shutdown()
 	# exit(0)
 	return 1
+
 
 def main():
 	global myPrivateIP
@@ -628,6 +662,7 @@ def main():
 
 	except Exception:
 		print(traceback.format_exc())
+
 
 if __name__ == "__main__":
 	main()
