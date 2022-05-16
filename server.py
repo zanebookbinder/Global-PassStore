@@ -543,8 +543,9 @@ def handleDeadHost(deadIP):
 				newChunkStorageList.append[newReplicaIP, pieceNum]
 
 		# 3. propagate new password storage to all clusters (for each user) 
-		print(f'propagating to all hosts this newChunkStorageList: {newChunkStorageList}')
-		propagate(user, newChunkStorageList, hosts)
+		if (newChunkStorageList):
+			print(f'propagating to all hosts this newChunkStorageList: {newChunkStorageList}')
+			propagate(user, newChunkStorageList, hosts)
 
 
 def kill():
