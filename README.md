@@ -58,3 +58,9 @@ To kill the GPS server process and then execute the server code again at every s
 1. Review and edit the restart_servers.sh file to ensure that file paths and names are consistent with the current system and coding environment.
 2. Execute the restart_servers.sh file to kill and then restart the GPS server.py process on every server node
 
+
+<br/>
+
+#### **Have a new server join a running system**
+To have a new server join the system, simply run "python3 server.py startup". It will automatically configure
+itself for password storage in the running GPS system.
