@@ -14,6 +14,7 @@ from ast import arguments
 import os
 import traceback
 import sys
+from winreg import KEY_NOTIFY
 import xmlrpc.client
 import xmlrpc.server
 from xmlrpc.server import SimpleXMLRPCRequestHandler
@@ -30,6 +31,9 @@ import string
 class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer): pass
 
 HOST_FAIL = -2
+KEY_NOT_FOUND = -1
+SUCCESS = 1
+
 
 localPasswordData = {}
 userPasswordMap = {}
@@ -145,7 +149,6 @@ def storeChunks(storageServers, key, chunks):
 	return chunkStorageList
 
 
-# user = id + site, host = machine hostname, pieceNum = password piece number
 # REMOTE method, makes outgoing RPC calls to other servers
 def propagate(user, chunkStorageList, hosts):
 	"""
@@ -161,13 +164,6 @@ def propagate(user, chunkStorageList, hosts):
 		if ip != myPublicIP:
 			safeRPC(ip, newConnection(ip).addHosts, user, chunkStorageList)
 
-	# num_threads = 4
-	# hosts_split = split_evenly(hosts, num_threads)
-	# propagateOps = []
-	# for i in range(num_threads):
-	# 	propagateOps.append([propagateHelper, user, hosts_split[i], chunkStorageList])
-
-	# runThreads(propagateOps)
 
 def propagateHelper(user, ipList, chunkStorageList):
 	print(f'running addHosts on ip {ipList}')
@@ -192,23 +188,33 @@ def split_evenly(a, n):
 	return chunks
 
 
-# put a (user + site), (password) pair into memory
 def put(key, val):
+	"""
+	Puts a key - value pair into localPasswordData, 
+	storing it in memory. 
+	"""
 	localPasswordData[key] = val
 	print("Now storing " + val + " at key " + key)
-	return 1
+	return SUCCESS
 
 
 # return a password if stored (given a user + site)
 def lookup(key):
+	"""
+	Returns a password chunk, if stored.
+	Params:
+		key: a combination of username, site, pieceNum (e.g. 'dlittle2 google.com3')
+	"""
 	if key in localPasswordData:
 		return localPasswordData[key]
 
-	return -1
+	return KEY_NOT_FOUND
 
 
-# collect the pieces of a password given user + site
-def search(username, key):
+def search(username, key): 
+	"""
+	Collect, join and return the pieces of a password given user + site
+	"""
 	print("starting search...")
 
 	user = key.split(' ')[0]
@@ -304,14 +310,18 @@ def getPrivateIP():
 
 
 def removePiece(key):
+	"""
+	Removes a key from localPasswordData (in-memory).
+	"""
+
 	print("in remove piece with key: " + str(key))
 	if key not in localPasswordData:
 		print("returning -1")
-		return -1
+		return KEY_NOT_FOUND
 
 	del localPasswordData[key]
 	print("returning 1")
-	return 1
+	return SUCCESS
 
 
 def delete(username, key):
@@ -348,12 +358,17 @@ def delete(username, key):
 	return "Successful deletion!"
 
 
+# LOCAL method
 def deletePasswordData(key):
+	"""
+	Remove data on the password for {key} from this node's
+	userPasswordMap structure
+	"""
 	if key not in userPasswordMap:
-		return -1
+		return KEY_NOT_FOUND
 
 	del userPasswordMap[key]
-	return 1
+	return SUCCESS
 
 
 def deletePropogation(user, key):
@@ -371,6 +386,10 @@ def deletePropogation(user, key):
 
 
 def propagateDeletionThread(key, hostsList):
+	"""
+	Tells all hosts in hostsList to remove their data
+	in userPassword pertaining to the given key
+	"""
 	print('propogating to new hostsList')
 	for ip in hostsList:
 		safeRPC(ip, newConnection(ip).deletePasswordData, key)
@@ -395,6 +414,12 @@ def runThreads(routines):
 
 
 def startup():
+	"""
+	A function to be run if the current node is joining an existing system.
+	Picks a cluster to join automatically, joins it, and propagates this change 
+	to all other servers. 
+	"""
+	
 	global myPublicIP
 	global hostClusterMap
 	global hostCountryMap
@@ -432,8 +457,11 @@ def startup():
 	print('my ip in hosts? ', myPublicIP in hosts)
 	print('startup successful')
 
-
+# LOCAL method
 def removeHost(ip):
+	"""
+	Removes this IP from this node's local lists of hosts / clusters
+	"""
 	try:
 		hosts.remove(ip)
 		for clusterHosts in hostClusterMap.values():
@@ -442,18 +470,26 @@ def removeHost(ip):
 	except:
 		print(f'trying to remove ip {ip}, but it was not in list of hosts.')
 
-
+# LOCAL method
 def addNewHost(host, cluster):
+	"""
+	Adds this IP to this node's local lists of hosts / clusters
+	"""
 	hosts.append(host)
 	hostClusterMap[cluster].append(host)
 	print(f'adding new host {host} to cluster {cluster}')
 
 
 def newConnection(ip):
+	""" Returns a new ServerProxy connection to the given IP """
 	return xmlrpc.client.ServerProxy(urlFromIp(ip))
 
 
 def safeRPC(ip, fn, *args):
+	"""
+	A function to call the provided function, and handle server 
+	failures by calling a recovery function.
+	"""
 	try:
 		result = fn(*args)
 		return result
@@ -482,14 +518,6 @@ def handleDeadHost(deadIP):
 	# 2. re-replicate that node's password data
 	upmCopy = deepcopy(userPasswordMap)
 	for key, pieceDict in upmCopy.items():
-		"""
-		'danny google'com: {
-			{1: ['44.199.229.51', '18.136.203.66'], 
-			2: ['3.22.185.101', '18.166.176.112'], 
-			3: ['13.57.194.105', '13.233.255.217'], 
-			4: ['18.191.134.62', '16.162.137.92']
-		}
-		"""
 		user, _ = key.split(' ')
 		for pieceNum, ipList in pieceDict.items():
 			newReplicaIP = ''
@@ -521,6 +549,10 @@ def handleDeadHost(deadIP):
 
 
 def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
+	"""
+	Replaces a deadIP with a newly replicated one in this server's local userPasswordMap.
+	This should be done if a node becomes unresponsive.
+	"""
 	print(f'replacing deadIP {deadIP} of upm[{key}][{pieceNum}] with ip: {newIP}')
 	try:
 		userPasswordMap[key][pieceNum].remove(deadIP)
@@ -537,6 +569,9 @@ def urlFromIp(ip):
 ### Client Connection Methods ###
 
 def testNPasswordsStored(n):
+	"""
+	A function to store passwords in bulk- only used in testing.py
+	"""
 	letters = string.ascii_lowercase
 	chunk1 = 'may1'
 	chunk2 = '4th'
@@ -578,11 +613,14 @@ def getHostClusterMap():
 	return str(hostClusterMap)
 
 def kill():
+	"""
+	Renders this server inactive.
+	"""
 	global serverActive
 
 	print('Killing server now. Goodbye!')
 	serverActive = False
-	return 1
+	return SUCCESS
 
 
 def main():
