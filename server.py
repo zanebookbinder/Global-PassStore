@@ -511,7 +511,7 @@ def handle_dead_host(deadIP):
 		print('print2')
 		newChunkStorageList = []
 		user, _ = key.split(' ')
-		for pieceNum, ipList in pieceDict.values:
+		for pieceNum, ipList in pieceDict.values():
 			print('print3')
 			if deadIP in ipList:
 				print('print4')
