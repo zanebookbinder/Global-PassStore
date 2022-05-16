@@ -500,14 +500,14 @@ def safeRPC(ip, fn, *args):
 
 def handleDeadHost(deadIP):
 	# 1. remove this IP from all servers' list of hosts
-	deadHostCluster = getCluster(deadIP)
+	print('removing dead host')
 	removeHost(deadIP)
 	for ip in hosts:
 		if ip == myPublicIP: continue
 		safeRPC(ip, newConnection(ip).removeHost, deadIP)
 	
+	print('re-replicating dead hosts data')
 	# 2. re-replicate that node's password data
-	print('print1')
 	upmCopy = deepcopy(userPasswordMap)
 	for key, pieceDict in upmCopy.items():
 		"""
@@ -518,13 +518,11 @@ def handleDeadHost(deadIP):
 			4: ['18.191.134.62', '16.162.137.92']
 		}
 		"""
-		print('print2')
-		newChunkStorageList = []
 		user, _ = key.split(' ')
 		for pieceNum, ipList in pieceDict.items():
-			print('print3')
+			newReplicaIP = ''
 			if deadIP in ipList:
-				print('print4')
+				print(f'ip addr found for {key}, pieceNum {pieceNum}')
 				updatedList = ipList.copy()
 				updatedList.remove(deadIP)
 				replicaIP = updatedList[0]
@@ -532,21 +530,25 @@ def handleDeadHost(deadIP):
 				if lookupResult == -1:
 					print("Potential data loss! replica data could not be recovered!")
 					continue
-				print('print5')
+				
 				replicaCluster = getCluster(replicaIP)
 				restOfCluster = hostClusterMap[replicaCluster].copy()
 				restOfCluster.remove(replicaIP)
 				newReplicaIP = random.choice(restOfCluster)
 				
 				safeRPC(newReplicaIP, newConnection(newReplicaIP).put, key + str(pieceNum), lookupResult)
-				print(f'stored key {key}, piece {pieceNum} at server {newReplicaIP}')
-				newChunkStorageList.append([newReplicaIP, pieceNum])
+				print(f'Data re-replicated: stored key {key}, piece {pieceNum} at server {newReplicaIP}')
 
 		# 3. propagate new password storage to all clusters (for each user) 
-		if (newChunkStorageList):
-			print(f'propagating to all hosts this newChunkStorageList: {newChunkStorageList}')
-			propagate(user, newChunkStorageList, hosts)
+		if (newReplicaIP):
+			print(f'Telling all hosts to replace deadIP with newIP: {newReplicaIP}, pieceNum {pieceNum}')
+			for host in hosts:
+				safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, newReplicaIP)
+				host.replaceUserPasswordMapIP
+			# propagate(user, newChunkStorageList, hosts)
 
+def replaceUserPasswordMapIP(key, pieceNum , newIP):
+	userPasswordMap[key][pieceNum] = newIP
 
 def kill():
 	global serverActive
@@ -607,7 +609,8 @@ def main():
 			server.register_function(kill)
 			server.register_function(addNewHost)
 			server.register_function(removeHost)
-			
+			server.register_function(replaceUserPasswordMapIP)
+
 			print('about to serve forever')
 			while(serverActive):
 				# server.serve_forever()
