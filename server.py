@@ -545,7 +545,6 @@ def handleDeadHost(deadIP):
 				replaceUserPasswordMapIP(key, pieceNum, deadIP, newReplicaIP)
 				for host in hosts:
 					safeRPC(host, newConnection(host).replaceUserPasswordMapIP, key, pieceNum, deadIP, newReplicaIP)
-					host.replaceUserPasswordMapIP
 				# propagate(user, newChunkStorageList, hosts)
 
 def replaceUserPasswordMapIP(key, pieceNum, deadIP, newIP):
