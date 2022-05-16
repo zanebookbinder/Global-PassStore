@@ -18,6 +18,8 @@ def main():
 			print(connection.getUserPasswordMapLength())
 		elif parse == 'pws':
 			print(connection.getLocalPasswordData())
+		elif parse == 'kill':
+			print(f'kill status: {connection.kill()}')
 		print()
 
 

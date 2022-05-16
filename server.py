@@ -94,13 +94,13 @@ def propagateToOtherClusters(chunkStorageList, key):
 	
 	otherClusters = hostClusterMap.copy()
 	otherClusters.pop(myCluster)
-	for cluster, ipList in enumerate(list(otherClusters.values())):
+	for ipList in otherClusters.values():
 		randNodeIP = random.choice(ipList)
 		randNodeCluster = getCluster(randNodeIP)
 		randNodeOtherHosts = hostClusterMap[randNodeCluster].copy()
 		randNodeOtherHosts.remove(randNodeIP)
 
-		print(f'telling server {randNodeIP} to propagate to its cluster {cluster}.')
+		print(f'telling server {randNodeIP} to propagate to its cluster {randNodeCluster}.')
 		print(f'chunkStorageList: {chunkStorageList}')
 		safeRPC(randNodeIP, newConnection(randNodeIP).propagate, key, chunkStorageList, randNodeOtherHosts)	
 		
@@ -502,6 +502,8 @@ def handle_dead_host(deadIP):
 	# 2. re-replicate that node's password data
 	dataToReReplicate = []
 	for key, pieceDict in userPasswordMap.items():
+		newChunkStorageList = []
+		user, url = key.split(' ')
 		for pieceNum, ipList in pieceDict.values:
 			if deadIP in ipList:
 				updatedList = ipList.copy()
@@ -515,8 +517,13 @@ def handle_dead_host(deadIP):
 				restOfCluster = hostClusterMap[replicaCluster].copy()
 				restOfCluster.remove(replicaIP)
 				newReplicaIP = random.choice(restOfCluster)
-				safeRPC(newReplicaIP, newConnection(newReplicaIP))
+				safeRPC(newReplicaIP, newConnection(newReplicaIP).put, key + str(pieceNum))
+				print(f'stored key {key}, piece {pieceNum} at server {newReplicaIP}')
+				newChunkStorageList.append[newReplicaIP, pieceNum]
 
+		# 3. propagate new password storage to all clusters (for each user) 
+		print(f'propagating to all hosts this newChunkStorageList: {newChunkStorageList}')
+		propagate(user, newChunkStorageList, hosts)
 
 
 def kill():
